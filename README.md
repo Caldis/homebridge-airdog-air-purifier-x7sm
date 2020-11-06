@@ -1,0 +1,1 @@
+# homebridge-airdog-air-purifier-x7sm
