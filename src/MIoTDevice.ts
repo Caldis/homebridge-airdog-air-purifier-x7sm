@@ -8,12 +8,13 @@ import {
 } from 'homebridge'
 import { getDeviceId, sleep } from './MIoTDevice.utils'
 import miio, {
-  DeviceInstance,
-  Spec,
-  SpecMapping,
-  SpecsGetQuery,
-  SpecsResponseValueMapping
+  DeviceInstance, MIIOSpec, MIIOSpecGetQuery, MIIOSpecMapping, MIIOSpecResponseValueMapping,
+  MIOTSpec,
+  MIOTSpecMapping,
+  MIOTSpecsGetQuery,
+  MIOTSpecsResponseValueMapping
 } from 'miio'
+import * as MIIO from 'miio'
 
 export type MIoTDeviceIdentify = { name: string; token: string; address: string; }
 
@@ -25,7 +26,7 @@ type Props = {
 }
 type RegisterConfig = {
   name?: string,
-  get: { formatter: (valueMapping: SpecsResponseValueMapping) => any }
+  get: { formatter: (valueMapping: MIOTSpecsResponseValueMapping) => any }
   set?: { formatter: (value: any) => any; property: string }
 }
 enum ErrorMessages {
@@ -48,8 +49,10 @@ export default class MIoTDevice {
   public device?: DeviceInstance
   private deviceConnectQueue: (() => void)[] = []
   // Properties
-  private specs: SpecMapping = {}
-  private specsQueue: ((valueMapping: SpecsResponseValueMapping) => void)[] = []
+  private MIoTSpecsMapping: MIOTSpecMapping = {}
+  private MIoTSpecsQueue: ((valueMapping: MIOTSpecsResponseValueMapping) => void)[] = []
+  private MIIOSpecsMapping: MIIOSpecMapping = {}
+  private MIIOSpecsQueue: ((valueMapping: MIIOSpecResponseValueMapping) => void)[] = []
 
   constructor (props: Props) {
     // HomeBridge
@@ -112,38 +115,40 @@ export default class MIoTDevice {
     })
   }
 
+  /*
+   * MIoT
+   */
   // Spec
-  public addSpec = (spec: Spec) => {
-    this.specs[spec.name] = spec
+  public addMIoTSpec = (spec: MIOTSpec) => {
+    this.MIoTSpecsMapping[spec.name] = spec
   }
-  public getSpec = async (name?: string | string[]) => {
+  public getMIoTSpec = async (name?: string | string[]) => {
     // Guard
     if (!this.isConnected) await this.connect()
     if (!this.device?.did) throw new Error(ErrorMessages.NotConnect)
     const did = this.device.did
     // Action: getAll
-    if (!name) return Object.values(this.specs).map(i => ({ ...i, did }))
+    if (!name) return Object.values(this.MIoTSpecsMapping).map(i => ({ ...i, did }))
     // Action: getByName
-    const targetSpecs: SpecsGetQuery = []
+    const targetSpecs: MIOTSpecsGetQuery = []
     if (Array.isArray(name)) {
       name.forEach(i => {
-        const spec = this.specs[i]
+        const spec = this.MIoTSpecsMapping[i]
         if (spec) targetSpecs.push({ ...spec, did })
       })
     } else {
-      const spec = this.specs[name]
+      const spec = this.MIoTSpecsMapping[name]
       if (spec) targetSpecs.push({ ...spec, did })
     }
     return targetSpecs
   }
-
   // Properties
-  public getProperty = async <T extends any> (name?: string | string[]) => {
+  public getMIoTProperty = async <T extends any> (name?: string | string[]) => {
     // Guard
     if (!this.isConnected) await this.connect()
     if (!this.device?.did) throw new Error(ErrorMessages.NotConnect)
     // Spec
-    const targetSpecs = await this.getSpec(name)
+    const targetSpecs = await this.getMIoTSpec(name)
     if (!Array.isArray(targetSpecs) || targetSpecs.length === 0) throw new Error(ErrorMessages.SpecNotFound)
     // Action
     return this.device.miioCall<T>('get_properties', targetSpecs)
@@ -153,58 +158,57 @@ export default class MIoTDevice {
   // multiple requests will be triggered in order to request the corresponding target value.
   // These fragmentation request will cause the MIoT device to refuse to response or weak performance
   // and cause the Accessory display "Not Response" in iOS Home app.
-  private debounceRequestProperty = debounce(async () => {
+  private debounceRequestMIoTProperty = debounce(async () => {
     // Spec
-    const targetSpecs = await this.getSpec()
+    const targetSpecs = await this.getMIoTSpec()
     // Pull queue
-    const queue = [...this.specsQueue]
-    this.specsQueue = []
+    const queue = [...this.MIoTSpecsQueue]
+    this.MIoTSpecsQueue = []
     // Get properties
     const properties = await this.device!.miioCall('get_properties', targetSpecs)
     const mapping = targetSpecs.reduce((acc, cur, idx) => ({
       ...acc,
       [cur.name]: properties[idx].value
-    }), {} as SpecsResponseValueMapping)
-    this.log.debug(`Merging request of ${this.identify.name} ${this.identify.address}`)
+    }), {} as MIOTSpecsResponseValueMapping)
+    this.log.debug(`MIoT Merging request of ${this.identify.name} ${this.identify.address}`)
     queue.forEach(resolve => resolve(mapping))
   }, REQUEST_PROPERTY_DEBOUNCE_THRESHOLD)
-  public setProperty = async <T extends any> (name: string, value: T) => {
+  public setMIoTProperty = async <T extends any> (name: string, value: T) => {
     // Guard
     if (!this.isConnected) await this.connect()
     if (!this.device?.did) throw new Error(ErrorMessages.NotConnect)
     const did = this.device.did
     // Spec
-    const targetSpec = this.specs[name]
+    const targetSpec = this.MIoTSpecsMapping[name]
     if (!targetSpec) throw new Error(ErrorMessages.SpecNotFound)
     // Action
     return this.device.miioCall<T>('set_properties', [Object.assign(targetSpec, { did, value })])
   }
-
   // Events
-  private pullProperty = async (): Promise<SpecsResponseValueMapping> => {
+  private pullMIoTProperty = async (): Promise<MIOTSpecsResponseValueMapping> => {
     // Guard
     if (!this.isConnected) await this.connect()
     if (!this.device?.did) throw new Error(ErrorMessages.NotConnect)
     // Action
     return new Promise((resolve => {
       // Queue update
-      this.specsQueue.push(resolve)
+      this.MIoTSpecsQueue.push(resolve)
       // Trigger Property getter
-      this.debounceRequestProperty()
+      this.debounceRequestMIoTProperty()
     }))
   }
-  public addCharacteristicListener(type: any, config: RegisterConfig) {
+  public addMIoTCharacteristicListener(type: any, config: RegisterConfig) {
     const characteristic = this.characteristicsService.getCharacteristic(type)
     if ('get' in config) {
       characteristic.on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
         try {
-          this.log.debug(`GET START ${type.name}`, Date.now())
-          const property = await this.pullProperty()
+          this.log.debug(`MIoT START GETTING ${type.name}`, Date.now())
+          const property = await this.pullMIoTProperty()
           const propertyFormatted = config.get.formatter(property)
-          this.log.debug(`GET SUCCESS ${type.name}`, propertyFormatted)
+          this.log.debug(`MIoT GETTING ${type.name} SUCCESS `, propertyFormatted)
           callback(undefined, propertyFormatted)
         } catch (e) {
-          this.log.error(`ERROR ${type.name}`, e)
+          this.log.error(`MIoT GETTING ${type.name} ERROR`, e)
           callback(e)
         }
       })
@@ -214,13 +218,114 @@ export default class MIoTDevice {
       if (set) {
         characteristic.on(CharacteristicEventTypes.SET, async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           try {
-            this.log.debug(`SET START ${type.name}`, Date.now())
+            this.log.debug(`MIoT START SETTING ${type.name}`, Date.now())
             const valueFormatted = set.formatter(value)
-            await this.setProperty(set.property, valueFormatted)
-            this.log.debug(`SET SUCCESS ${type.name}`, valueFormatted)
+            await this.setMIoTProperty(set.property, valueFormatted)
+            this.log.debug(`MIoT SETTING ${type.name} SUCCESS`, valueFormatted)
             callback(undefined, value)
           } catch (e) {
-            this.log.error(`ERROR ${type.name}`, e)
+            this.log.error(`MIoT SETTING ERROR ${type.name}`, e)
+            callback(e)
+          }
+        })
+      }
+    }
+  }
+
+  /*
+   * MIIO
+   */
+  // Spec
+  public addMIIOSpec = (spec: MIIOSpec) => {
+    this.MIIOSpecsMapping[spec] = spec
+  }
+  public getMIIOSpec = async (name?: string | string[]) => {
+    // Action: getAll
+    if (!name) return Object.values(this.MIIOSpecsMapping)
+    // Action: getByName
+    if (Array.isArray(name)) {
+      return name
+    } else {
+      return [name]
+    }
+  }
+  // Properties
+  public getMIIOProperty = async <T extends any> (name?: string | string[]) => {
+    // Guard
+    if (!this.isConnected) await this.connect()
+    // Spec
+    const targetSpecs = await this.getMIIOSpec(name)
+    if (!Array.isArray(targetSpecs) || targetSpecs.length === 0) throw new Error(ErrorMessages.SpecNotFound)
+    // Action
+    return this.device?.miioCall<T>('get_prop', targetSpecs)
+  }
+  // Merging request by debounce
+  private debounceRequestMIIOProperty = debounce(async () => {
+    // Spec
+    const targetSpecs = await this.getMIIOSpec()
+    // Pull queue
+    const queue = [...this.MIIOSpecsQueue]
+    this.MIIOSpecsQueue = []
+    // Get properties
+    const properties = await this.device!.miioCall('get_prop', targetSpecs)
+    this.log.debug('MIIO Properties', properties)
+    const mapping = targetSpecs.reduce((acc, cur, idx) => ({
+      ...acc,
+      [cur]: properties[idx]
+    }), {} as MIIOSpecResponseValueMapping)
+    this.log.debug(`MIIO Merging request of ${this.identify.name} ${this.identify.address}`)
+    queue.forEach(resolve => resolve(mapping))
+  }, REQUEST_PROPERTY_DEBOUNCE_THRESHOLD)
+  public setMIIOProperty = async <T extends (string | number)> (name: string, value: T) => {
+    // Guard
+    if (!this.isConnected) await this.connect()
+    // Spec
+    const targetSpec = this.MIIOSpecsMapping[name]
+    if (!targetSpec) throw new Error(ErrorMessages.SpecNotFound)
+    // Action
+    this.log.debug(`set_${name}`, Array.isArray(value) ? value : [value])
+    return this.device?.miioCall<T>(`set_${name}`, Array.isArray(value) ? value : [value])
+  }
+  // Events
+  private pullMIIOProperty = async (): Promise<MIIOSpecResponseValueMapping> => {
+    // Guard
+    if (!this.isConnected) await this.connect()
+    // Action
+    return new Promise((resolve => {
+      // Queue update
+      this.MIIOSpecsQueue.push(resolve)
+      // Trigger Property getter
+      this.debounceRequestMIIOProperty()
+    }))
+  }
+  public addMIIOCharacteristicListener(type: any, config: RegisterConfig) {
+    const characteristic = this.characteristicsService.getCharacteristic(type)
+    if ('get' in config) {
+      characteristic.on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
+        try {
+          this.log.debug(`MIIO START GETTING ${type.name}`, Date.now())
+          const property = await this.pullMIIOProperty()
+          const propertyFormatted = config.get.formatter(property)
+          this.log.debug(`MIIO GETTING ${type.name} SUCCESS`, propertyFormatted)
+          callback(undefined, propertyFormatted)
+        } catch (e) {
+          this.log.error(`MIIO GETTING ${type.name} ERROR`, e)
+          callback(e)
+        }
+      })
+    }
+    if ('set' in config) {
+      const set = config.set
+      if (set) {
+        characteristic.on(CharacteristicEventTypes.SET, async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+          try {
+            this.log.debug(`MIIO START SETTING ${type.name}`, Date.now())
+            const valueFormatted = set.formatter(value)
+            await this.setMIIOProperty(set.property, valueFormatted)
+            this.log.debug(`MIIO SETTING ${type.name} SUCCESS`, valueFormatted)
+            callback(undefined, value)
+          } catch (e) {
+            this.log.error(`MIIO SETTING ${type.name} ERROR`, e)
             callback(e)
           }
         })

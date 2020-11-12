@@ -5,101 +5,77 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AirDogAirPurifierX7SM = void 0;
 const MIoTDevice_1 = __importDefault(require("../MIoTDevice"));
+const AirDogAirPurifierX7SM_constant_1 = require("./AirDogAirPurifierX7SM.constant");
 class AirDogAirPurifierX7SM {
     constructor(props) {
-        // registrySpecs = () => {
-        // Object.values(Specs).forEach(i => this.device.addSpec(i))
-        // }
+        this.registrySpecs = () => {
+            Object.values(AirDogAirPurifierX7SM_constant_1.Specs).forEach(i => this.device.addMIIOSpec(i));
+        };
         this.registryCharacters = () => {
-            const characteristic = this.characteristicsService.getCharacteristic(this.hap.Characteristic.Active);
-            characteristic.on("get" /* GET */, async (callback) => {
-                try {
-                    this.log.debug(`GET START`, Date.now());
-                    // @ts-ignore
-                    const property = await this.device.device.miioCall('get_prop', ['power', 'mode', 'speed', 'lock', 'clean', 'pm', 'hcho']);
-                    // @ts-ignore
-                    this.log.debug(`GET SUCCESS`, property, property[0] === 'on' ? 1 : 0);
-                    // @ts-ignore
-                    callback(undefined, property[0] === 'on' ? 1 : 0);
-                }
-                catch (e) {
-                    this.log.error(`ERROR`, e);
-                    callback(e);
-                }
+            this.device.addMIIOCharacteristicListener(this.hap.Characteristic.Active, {
+                get: {
+                    formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] ? 1 : 0
+                },
+                set: {
+                    property: AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus,
+                    formatter: (value) => value
+                },
             });
-            characteristic.on("set" /* SET */, async (value, callback) => {
-                try {
-                    this.log.debug(`SET START`, Date.now(), value);
-                    // @ts-ignore
-                    // await this.device!.device!.miioCall('set_power', [value])
-                    this.log.debug(`SET SUCCESS`, value);
-                    callback(undefined, value);
-                }
-                catch (e) {
-                    this.log.error(`ERROR`, e);
-                    callback(e);
-                }
+            this.device.addMIIOCharacteristicListener(this.hap.Characteristic.CurrentAirPurifierState, {
+                get: {
+                    formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] ? 2 : 0
+                },
             });
-            // this.device.addCharacteristicListener(this.hap.Characteristic.Active, {
-            //   get: {
-            //     formatter: (valueMapping) => valueMapping[Specs.AirPurifierSwitchStatus.name] ? 1 : 0
-            //   },
-            //   set: {
-            //     property: Specs.AirPurifierSwitchStatus.name,
-            //     formatter: (value) => value === 1
-            //   },
-            // })
-            // this.device.addCharacteristicListener(this.hap.Characteristic.CurrentAirPurifierState, {
-            //   get: {
-            //     formatter: (valueMapping) => valueMapping[Specs.AirPurifierSwitchStatus.name] ? 2 : 0
-            //   },
-            // })
-            // this.device.addCharacteristicListener(this.hap.Characteristic.TargetAirPurifierState, {
-            //   get: {
-            //     formatter: (valueMapping) => {
-            //       return valueMapping[Specs.AirPurifierMode.name] === AirPurifierModeCode.Auto ? 1 : 0
-            //     }
-            //   },
-            //   set: {
-            //     property: Specs.AirPurifierMode.name,
-            //     formatter: (value) => value === 1 ? AirPurifierModeCode.Auto : AirPurifierModeCode.Sleep
-            //   },
-            // })
-            // this.device.addCharacteristicListener(this.hap.Characteristic.LockPhysicalControls, {
-            //   get: {
-            //     formatter: (valueMapping) => {
-            //       return valueMapping[Specs.PhysicalControlLocked.name] ? 1 : 0
-            //     }
-            //   },
-            //   set: {
-            //     property: Specs.PhysicalControlLocked.name,
-            //     formatter: (value) => value === 1
-            //   },
-            // })
-            // this.device.addCharacteristicListener(this.hap.Characteristic.RotationSpeed, {
-            //   get: {
-            //     formatter: (valueMapping) => {
-            //       const value = valueMapping[Specs.AirPurifierFanLevel.name] as AirPurifierFanLevelCode
-            //       return AirPurifierFanLevelCodeMapping[value]
-            //     }
-            //   },
-            //   set: {
-            //     property: Specs.AirPurifierFanLevel.name,
-            //     formatter: (value) => {
-            //       if (value <= 20) {
-            //         return AirPurifierFanLevelCode.Level1
-            //       } else if (value <= 40) {
-            //         return AirPurifierFanLevelCode.Level2
-            //       } else if (value <= 60) {
-            //         return AirPurifierFanLevelCode.Level3
-            //       } else if (value <= 80) {
-            //         return AirPurifierFanLevelCode.Level4
-            //       } else if (value <= 100) {
-            //         return AirPurifierFanLevelCode.Level5
-            //       }
-            //     }
-            //   },
-            // })
+            this.device.addMIIOCharacteristicListener(this.hap.Characteristic.TargetAirPurifierState, {
+                get: {
+                    formatter: (valueMapping) => {
+                        return valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierMode] === AirDogAirPurifierX7SM_constant_1.AirPurifierModeCode.Sleep ? 1 : 0;
+                    }
+                },
+                set: {
+                    property: AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierMode,
+                    formatter: (value) => value === 1 ? AirDogAirPurifierX7SM_constant_1.AirPurifierModeCode.Sleep : AirDogAirPurifierX7SM_constant_1.AirPurifierModeCode.Manual
+                },
+            });
+            this.device.addMIIOCharacteristicListener(this.hap.Characteristic.LockPhysicalControls, {
+                get: {
+                    formatter: (valueMapping) => {
+                        return valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.PhysicalControlLocked] ? 1 : 0;
+                    }
+                },
+                set: {
+                    property: AirDogAirPurifierX7SM_constant_1.Specs.PhysicalControlLocked,
+                    formatter: (value) => value === 1 ? AirDogAirPurifierX7SM_constant_1.AirPurifierLockCode.Lock : AirDogAirPurifierX7SM_constant_1.AirPurifierLockCode.Unlock
+                },
+            });
+            this.device.addMIIOCharacteristicListener(this.hap.Characteristic.RotationSpeed, {
+                get: {
+                    formatter: (valueMapping) => {
+                        const value = valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierFanLevel];
+                        return AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCodeMapping[value];
+                    }
+                },
+                set: {
+                    property: AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierFanLevel,
+                    formatter: (value) => {
+                        if (value <= 20) {
+                            return AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCode.Level1;
+                        }
+                        else if (value <= 40) {
+                            return AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCode.Level2;
+                        }
+                        else if (value <= 60) {
+                            return AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCode.Level3;
+                        }
+                        else if (value <= 80) {
+                            return AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCode.Level4;
+                        }
+                        else if (value <= 100) {
+                            return AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCode.Level5;
+                        }
+                    }
+                },
+            });
         };
         // Requirement
         this.name = props.identify.name;
@@ -116,7 +92,7 @@ class AirDogAirPurifierX7SM {
         // device
         this.device = new MIoTDevice_1.default({ ...props, characteristicsService: this.characteristicsService });
         // Registry
-        // this.registrySpecs()
+        this.registrySpecs();
         this.registryCharacters();
     }
     /*

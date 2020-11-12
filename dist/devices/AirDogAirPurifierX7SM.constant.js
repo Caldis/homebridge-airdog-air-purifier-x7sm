@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AirPurifierFanLevelCodeMapping = exports.AirPurifierFanLevelCode = exports.AirPurifierModeCode = exports.Specs = void 0;
+exports.AirPurifierCleanCode = exports.AirPurifierLockCode = exports.AirPurifierFanLevelCodeMapping = exports.AirPurifierFanLevelCode = exports.AirPurifierModeCode = exports.AirPurifierSwitchStatusCode = exports.Specs = void 0;
 // 特性信息
 exports.Specs = {
     // 启动状态
@@ -17,6 +17,12 @@ exports.Specs = {
     // 清洁指示
     PhysicalCleanNeeded: 'clean',
 };
+// 启动状态枚举
+var AirPurifierSwitchStatusCode;
+(function (AirPurifierSwitchStatusCode) {
+    AirPurifierSwitchStatusCode["On"] = "on";
+    AirPurifierSwitchStatusCode["Off"] = "off";
+})(AirPurifierSwitchStatusCode = exports.AirPurifierSwitchStatusCode || (exports.AirPurifierSwitchStatusCode = {}));
 // 运行模式枚举
 var AirPurifierModeCode;
 (function (AirPurifierModeCode) {
@@ -42,4 +48,16 @@ exports.AirPurifierFanLevelCodeMapping = {
     [AirPurifierFanLevelCode.Level4]: 80,
     [AirPurifierFanLevelCode.Level5]: 100,
 };
+// 锁定状态枚举
+var AirPurifierLockCode;
+(function (AirPurifierLockCode) {
+    AirPurifierLockCode["Lock"] = "lock";
+    AirPurifierLockCode["Unlock"] = "unlock";
+})(AirPurifierLockCode = exports.AirPurifierLockCode || (exports.AirPurifierLockCode = {}));
+// 清洁状态枚举
+var AirPurifierCleanCode;
+(function (AirPurifierCleanCode) {
+    AirPurifierCleanCode["Yes"] = "y";
+    AirPurifierCleanCode["No"] = "n";
+})(AirPurifierCleanCode = exports.AirPurifierCleanCode || (exports.AirPurifierCleanCode = {}));
 //# sourceMappingURL=AirDogAirPurifierX7SM.constant.js.map
