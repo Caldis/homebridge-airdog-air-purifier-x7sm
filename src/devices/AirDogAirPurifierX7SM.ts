@@ -1,10 +1,11 @@
 import { AccessoryPlugin, HAP, Logging, Service } from 'homebridge'
 import MIoTDevice, { MIoTDeviceIdentify } from '../MIoTDevice'
 import {
-  AirPurifierFanLevelCode,
-  AirPurifierFanLevelCodeMapping,
-  AirPurifierLockCode,
-  AirPurifierModeCode, AirPurifierSwitchStatusCode,
+  AirPurifierFanLevelCodeMapping, AirPurifierFanLevelGetCode,
+  AirPurifierFanLevelSetCode, AirPurifierLockGetCode, AirPurifierLockSetCode, AirPurifierModeGetCode,
+  AirPurifierModeSetCode,
+  AirPurifierSwitchStatusGetCode,
+  AirPurifierSwitchStatusSetCode,
   Specs
 } from './AirDogAirPurifierX7SM.constant'
 
@@ -55,60 +56,87 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
   registryCharacters = () => {
     this.device.addMIIOCharacteristicListener(this.hap.Characteristic.Active, {
       get: {
-        formatter: (valueMapping) => valueMapping[Specs.AirPurifierSwitchStatus] ? 1 : 0
+        formatter: (valueMapping) =>
+          valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
+            ? 1
+            : 0
       },
       set: {
-        property: Specs.AirPurifierSwitchStatus,
-        formatter: (value) => value
+        property: 'set_power',
+        formatter: (value: AirPurifierSwitchStatusSetCode) => [value]
       },
     })
     this.device.addMIIOCharacteristicListener(this.hap.Characteristic.CurrentAirPurifierState, {
       get: {
-        formatter: (valueMapping) => valueMapping[Specs.AirPurifierSwitchStatus] ? 2 : 0
+        formatter: (valueMapping) =>
+          valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
+            ? 2
+            : 0
       },
     })
     this.device.addMIIOCharacteristicListener(this.hap.Characteristic.TargetAirPurifierState, {
       get: {
-        formatter: (valueMapping) => {
-          return valueMapping[Specs.AirPurifierMode] === AirPurifierModeCode.Sleep ? 1 : 0
-        }
+        formatter: (valueMapping) =>
+          valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Auto ? 1 : 0
       },
       set: {
-        property: Specs.AirPurifierMode,
-        formatter: (value) => value === 1 ? AirPurifierModeCode.Sleep : AirPurifierModeCode.Manual
+        property: 'set_wind', // [modeValue, speedValue]
+        formatter: (value, previousProperty) =>
+          value === 1
+            ? [AirPurifierModeSetCode.Auto, previousProperty[Specs.AirPurifierFanLevel]]
+            : [AirPurifierModeSetCode.Manual, previousProperty[Specs.AirPurifierFanLevel]]
       },
     })
     this.device.addMIIOCharacteristicListener(this.hap.Characteristic.LockPhysicalControls, {
       get: {
-        formatter: (valueMapping) => {
-          return valueMapping[Specs.PhysicalControlLocked] ? 1 : 0
-        }
+        formatter: (valueMapping) =>
+          valueMapping[Specs.PhysicalControlLocked] === AirPurifierLockGetCode.Lock
+            ? 1
+            : 0
       },
       set: {
-        property: Specs.PhysicalControlLocked,
-        formatter: (value) => value === 1 ? AirPurifierLockCode.Lock : AirPurifierLockCode.Unlock
+        property: 'set_lock',
+        formatter: (value) =>
+          value === 1
+            ? [AirPurifierLockSetCode.Lock]
+            : [AirPurifierLockSetCode.Unlock]
+      },
+    })
+    this.device.addMIIOCharacteristicListener(this.hap.Characteristic.SwingMode, {
+      get: {
+        formatter: (valueMapping) =>
+          valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Sleep
+            ? 1
+            : 0
+      },
+      set: {
+        property: 'set_wind',
+        formatter: (value, previousProperty) =>
+          value === 1
+            ? [AirPurifierModeSetCode.Sleep, previousProperty[Specs.AirPurifierFanLevel]]
+            : [AirPurifierModeSetCode.Auto, previousProperty[Specs.AirPurifierFanLevel]]
       },
     })
     this.device.addMIIOCharacteristicListener(this.hap.Characteristic.RotationSpeed, {
       get: {
-        formatter: (valueMapping) => {
-          const value = valueMapping[Specs.AirPurifierFanLevel] as AirPurifierFanLevelCode
-          return AirPurifierFanLevelCodeMapping[value]
-        }
+        formatter: (valueMapping) =>
+          AirPurifierFanLevelCodeMapping[
+            valueMapping[Specs.AirPurifierFanLevel] as AirPurifierFanLevelGetCode
+          ]
       },
       set: {
-        property: Specs.AirPurifierFanLevel,
+        property: 'set_wind',
         formatter: (value) => {
           if (value <= 20) {
-            return AirPurifierFanLevelCode.Level1
+            return [AirPurifierModeSetCode.Manual, AirPurifierFanLevelSetCode.Level1]
           } else if (value <= 40) {
-            return AirPurifierFanLevelCode.Level2
+            return [AirPurifierModeSetCode.Manual, AirPurifierFanLevelSetCode.Level2]
           } else if (value <= 60) {
-            return AirPurifierFanLevelCode.Level3
+            return [AirPurifierModeSetCode.Manual, AirPurifierFanLevelSetCode.Level3]
           } else if (value <= 80) {
-            return AirPurifierFanLevelCode.Level4
-          } else if (value <= 100) {
-            return AirPurifierFanLevelCode.Level5
+            return [AirPurifierModeSetCode.Manual, AirPurifierFanLevelSetCode.Level4]
+          } else {
+            return [AirPurifierModeSetCode.Manual, AirPurifierFanLevelSetCode.Level5]
           }
         }
       },

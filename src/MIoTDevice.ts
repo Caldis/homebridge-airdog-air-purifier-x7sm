@@ -8,13 +8,12 @@ import {
 } from 'homebridge'
 import { getDeviceId, sleep } from './MIoTDevice.utils'
 import miio, {
-  DeviceInstance, MIIOSpec, MIIOSpecGetQuery, MIIOSpecMapping, MIIOSpecResponseValueMapping,
+  DeviceInstance, MIIOSpec, MIIOSpecMapping, MIIOSpecResponseValueMapping,
   MIOTSpec,
   MIOTSpecMapping,
   MIOTSpecsGetQuery,
   MIOTSpecsResponseValueMapping
 } from 'miio'
-import * as MIIO from 'miio'
 
 export type MIoTDeviceIdentify = { name: string; token: string; address: string; }
 
@@ -24,10 +23,10 @@ type Props = {
   identify: MIoTDeviceIdentify
   characteristicsService: Service
 }
-type RegisterConfig = {
+type RegisterConfig<T> = {
   name?: string,
   get: { formatter: (valueMapping: MIOTSpecsResponseValueMapping) => any }
-  set?: { formatter: (value: any) => any; property: string }
+  set?: { formatter: (value: any, previousProperty: T) => any[]; property: string }
 }
 enum ErrorMessages {
   NotConnect = 'Device not connected.',
@@ -35,8 +34,8 @@ enum ErrorMessages {
 }
 
 const RE_CONNECT_THRESHOLD = 90000
-const REQUEST_CONNECT_DEBOUNCE_THRESHOLD = 500
-const REQUEST_PROPERTY_DEBOUNCE_THRESHOLD = 500
+const REQUEST_CONNECT_DEBOUNCE_THRESHOLD = 100
+const REQUEST_PROPERTY_DEBOUNCE_THRESHOLD = 100
 
 export default class MIoTDevice {
 
@@ -46,11 +45,13 @@ export default class MIoTDevice {
   private readonly characteristicsService: Service
   // Device
   private readonly identify: MIoTDeviceIdentify
-  public device?: DeviceInstance
   private deviceConnectQueue: (() => void)[] = []
+  private device?: DeviceInstance
   // Properties
+  private MIoTPreviousProperties: MIOTSpecsResponseValueMapping = {}
   private MIoTSpecsMapping: MIOTSpecMapping = {}
   private MIoTSpecsQueue: ((valueMapping: MIOTSpecsResponseValueMapping) => void)[] = []
+  private MIIOPreviousProperties: MIIOSpecResponseValueMapping = {}
   private MIIOSpecsMapping: MIIOSpecMapping = {}
   private MIIOSpecsQueue: ((valueMapping: MIIOSpecResponseValueMapping) => void)[] = []
 
@@ -143,16 +144,6 @@ export default class MIoTDevice {
     return targetSpecs
   }
   // Properties
-  public getMIoTProperty = async <T extends any> (name?: string | string[]) => {
-    // Guard
-    if (!this.isConnected) await this.connect()
-    if (!this.device?.did) throw new Error(ErrorMessages.NotConnect)
-    // Spec
-    const targetSpecs = await this.getMIoTSpec(name)
-    if (!Array.isArray(targetSpecs) || targetSpecs.length === 0) throw new Error(ErrorMessages.SpecNotFound)
-    // Action
-    return this.device.miioCall<T>('get_properties', targetSpecs)
-  }
   // Merging request by debounce
   // When HomeBridge device is in initialization
   // multiple requests will be triggered in order to request the corresponding target value.
@@ -166,12 +157,12 @@ export default class MIoTDevice {
     this.MIoTSpecsQueue = []
     // Get properties
     const properties = await this.device!.miioCall('get_properties', targetSpecs)
-    const mapping = targetSpecs.reduce((acc, cur, idx) => ({
+    this.MIoTPreviousProperties = targetSpecs.reduce((acc, cur, idx) => ({
       ...acc,
       [cur.name]: properties[idx].value
     }), {} as MIOTSpecsResponseValueMapping)
     this.log.debug(`MIoT Merging request of ${this.identify.name} ${this.identify.address}`)
-    queue.forEach(resolve => resolve(mapping))
+    queue.forEach(resolve => resolve(this.MIoTPreviousProperties))
   }, REQUEST_PROPERTY_DEBOUNCE_THRESHOLD)
   public setMIoTProperty = async <T extends any> (name: string, value: T) => {
     // Guard
@@ -197,7 +188,7 @@ export default class MIoTDevice {
       this.debounceRequestMIoTProperty()
     }))
   }
-  public addMIoTCharacteristicListener(type: any, config: RegisterConfig) {
+  public addMIoTCharacteristicListener(type: any, config: RegisterConfig<MIOTSpecsResponseValueMapping>) {
     const characteristic = this.characteristicsService.getCharacteristic(type)
     if ('get' in config) {
       characteristic.on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
@@ -205,8 +196,8 @@ export default class MIoTDevice {
           this.log.debug(`MIoT START GETTING ${type.name}`, Date.now())
           const property = await this.pullMIoTProperty()
           const propertyFormatted = config.get.formatter(property)
-          this.log.debug(`MIoT GETTING ${type.name} SUCCESS `, propertyFormatted)
           callback(undefined, propertyFormatted)
+          this.log.debug(`MIoT GETTING ${type.name} SUCCESS `, propertyFormatted)
         } catch (e) {
           this.log.error(`MIoT GETTING ${type.name} ERROR`, e)
           callback(e)
@@ -219,10 +210,10 @@ export default class MIoTDevice {
         characteristic.on(CharacteristicEventTypes.SET, async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           try {
             this.log.debug(`MIoT START SETTING ${type.name}`, Date.now())
-            const valueFormatted = set.formatter(value)
+            const valueFormatted = set.formatter(value, this.MIoTPreviousProperties)
             await this.setMIoTProperty(set.property, valueFormatted)
-            this.log.debug(`MIoT SETTING ${type.name} SUCCESS`, valueFormatted)
             callback(undefined, value)
+            this.log.debug(`MIoT SETTING ${type.name} SUCCESS`, valueFormatted)
           } catch (e) {
             this.log.error(`MIoT SETTING ERROR ${type.name}`, e)
             callback(e)
@@ -250,15 +241,6 @@ export default class MIoTDevice {
     }
   }
   // Properties
-  public getMIIOProperty = async <T extends any> (name?: string | string[]) => {
-    // Guard
-    if (!this.isConnected) await this.connect()
-    // Spec
-    const targetSpecs = await this.getMIIOSpec(name)
-    if (!Array.isArray(targetSpecs) || targetSpecs.length === 0) throw new Error(ErrorMessages.SpecNotFound)
-    // Action
-    return this.device?.miioCall<T>('get_prop', targetSpecs)
-  }
   // Merging request by debounce
   private debounceRequestMIIOProperty = debounce(async () => {
     // Spec
@@ -269,22 +251,18 @@ export default class MIoTDevice {
     // Get properties
     const properties = await this.device!.miioCall('get_prop', targetSpecs)
     this.log.debug('MIIO Properties', properties)
-    const mapping = targetSpecs.reduce((acc, cur, idx) => ({
+    this.MIIOPreviousProperties = targetSpecs.reduce((acc, cur, idx) => ({
       ...acc,
       [cur]: properties[idx]
     }), {} as MIIOSpecResponseValueMapping)
     this.log.debug(`MIIO Merging request of ${this.identify.name} ${this.identify.address}`)
-    queue.forEach(resolve => resolve(mapping))
+    queue.forEach(resolve => resolve(this.MIIOPreviousProperties))
   }, REQUEST_PROPERTY_DEBOUNCE_THRESHOLD)
-  public setMIIOProperty = async <T extends (string | number)> (name: string, value: T) => {
+  public setMIIOProperty = async <T extends (string | number)> (name: string, value: any[]) => {
     // Guard
     if (!this.isConnected) await this.connect()
-    // Spec
-    const targetSpec = this.MIIOSpecsMapping[name]
-    if (!targetSpec) throw new Error(ErrorMessages.SpecNotFound)
     // Action
-    this.log.debug(`set_${name}`, Array.isArray(value) ? value : [value])
-    return this.device?.miioCall<T>(`set_${name}`, Array.isArray(value) ? value : [value])
+    return this.device?.miioCall<T>(name, value)
   }
   // Events
   private pullMIIOProperty = async (): Promise<MIIOSpecResponseValueMapping> => {
@@ -298,7 +276,7 @@ export default class MIoTDevice {
       this.debounceRequestMIIOProperty()
     }))
   }
-  public addMIIOCharacteristicListener(type: any, config: RegisterConfig) {
+  public addMIIOCharacteristicListener(type: any, config: RegisterConfig<MIIOSpecResponseValueMapping>) {
     const characteristic = this.characteristicsService.getCharacteristic(type)
     if ('get' in config) {
       characteristic.on(CharacteristicEventTypes.GET, async (callback: CharacteristicGetCallback) => {
@@ -306,8 +284,8 @@ export default class MIoTDevice {
           this.log.debug(`MIIO START GETTING ${type.name}`, Date.now())
           const property = await this.pullMIIOProperty()
           const propertyFormatted = config.get.formatter(property)
-          this.log.debug(`MIIO GETTING ${type.name} SUCCESS`, propertyFormatted)
           callback(undefined, propertyFormatted)
+          this.log.debug(`MIIO GETTING ${type.name} SUCCESS`, propertyFormatted)
         } catch (e) {
           this.log.error(`MIIO GETTING ${type.name} ERROR`, e)
           callback(e)
@@ -320,10 +298,10 @@ export default class MIoTDevice {
         characteristic.on(CharacteristicEventTypes.SET, async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
           try {
             this.log.debug(`MIIO START SETTING ${type.name}`, Date.now())
-            const valueFormatted = set.formatter(value)
+            const valueFormatted = set.formatter(value, this.MIIOPreviousProperties)
             await this.setMIIOProperty(set.property, valueFormatted)
-            this.log.debug(`MIIO SETTING ${type.name} SUCCESS`, valueFormatted)
             callback(undefined, value)
+            this.log.debug(`MIIO SETTING ${type.name} SUCCESS`, valueFormatted)
           } catch (e) {
             this.log.error(`MIIO SETTING ${type.name} ERROR`, e)
             callback(e)

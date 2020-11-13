@@ -24,7 +24,7 @@ npm i homebridge-airdog-air-purifier-x7sm@latest
        "devices": [
            {
                "name": "Name",
-               "address": " IP Address",
+               "address": "IP Address",
                "token": "Token"
            }
        ]
