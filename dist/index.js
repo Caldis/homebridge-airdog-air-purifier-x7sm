@@ -1,5 +1,6 @@
 "use strict";
 const AirDogAirPurifierX7SM_1 = require("./devices/AirDogAirPurifierX7SM");
+const AirDogAirPurifierX7SM_Sensor_1 = require("./devices/AirDogAirPurifierX7SM.Sensor");
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM';
 class Platform {
     constructor(logging, platformConfig, api) {
@@ -14,11 +15,18 @@ class Platform {
      * The set of exposed accessories CANNOT change over the lifetime of the plugin!
      */
     accessories(callback) {
-        callback(this.devices.map(item => new AirDogAirPurifierX7SM_1.AirDogAirPurifierX7SM({
-            hap: this.hap,
-            log: this.log,
-            identify: item,
-        })));
+        callback(this.devices.reduce((acc, cur) => acc.concat([
+            new AirDogAirPurifierX7SM_1.AirDogAirPurifierX7SM({
+                hap: this.hap,
+                log: this.log,
+                identify: cur,
+            }),
+            new AirDogAirPurifierX7SM_Sensor_1.AirDogAirPurifierX7SMSensor({
+                hap: this.hap,
+                log: this.log,
+                identify: cur,
+            }),
+        ]), []));
         this.log.info(`${PLATFORM_NAME} platform is initialized`);
     }
 }

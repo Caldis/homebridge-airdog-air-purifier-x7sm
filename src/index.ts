@@ -1,5 +1,6 @@
 import { DeviceConfigs } from 'miio'
 import { AirDogAirPurifierX7SM } from './devices/AirDogAirPurifierX7SM'
+import { AirDogAirPurifierX7SMSensor } from './devices/AirDogAirPurifierX7SM.Sensor'
 import { AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
@@ -27,13 +28,20 @@ class Platform implements StaticPlatformPlugin {
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
   accessories (callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback(this.devices.map(item =>
-      new AirDogAirPurifierX7SM({
-        hap: this.hap,
-        log: this.log,
-        identify: item,
-      })
-    ))
+    callback(this.devices.reduce((acc, cur) =>
+      acc.concat([
+        new AirDogAirPurifierX7SM({
+          hap: this.hap,
+          log: this.log,
+          identify: cur,
+        }),
+        new AirDogAirPurifierX7SMSensor({
+          hap: this.hap,
+          log: this.log,
+          identify: cur,
+        }),
+      ]), [] as AccessoryPlugin[])
+    )
     this.log.info(`${PLATFORM_NAME} platform is initialized`)
   }
 }
