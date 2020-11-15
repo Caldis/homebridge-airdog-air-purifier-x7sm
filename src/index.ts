@@ -1,6 +1,5 @@
 import { DeviceConfigs } from 'miio'
 import { AirDogAirPurifierX7SM } from './devices/AirDogAirPurifierX7SM'
-import { AirDogAirPurifierX7SMSensor } from './devices/AirDogAirPurifierX7SM.Sensor'
 import { AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
@@ -31,11 +30,6 @@ class Platform implements StaticPlatformPlugin {
     callback(this.devices.reduce((acc, cur) =>
       acc.concat([
         new AirDogAirPurifierX7SM({
-          hap: this.hap,
-          log: this.log,
-          identify: cur,
-        }),
-        new AirDogAirPurifierX7SMSensor({
           hap: this.hap,
           log: this.log,
           identify: cur,
