@@ -14,13 +14,19 @@ class AirDogAirPurifierX7SM {
         this.AirPurifierRegistryCharacters = () => {
             this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.Active, {
                 get: {
-                    formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] === AirDogAirPurifierX7SM_constant_1.AirPurifierSwitchStatusGetCode.On
-                        ? 1
-                        : 0
+                    formatter: (valueMapping) => {
+                        return valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] === AirDogAirPurifierX7SM_constant_1.AirPurifierSwitchStatusGetCode.On
+                            ? 1
+                            : 0;
+                    }
                 },
                 set: {
                     property: 'set_power',
-                    formatter: (value) => [value]
+                    formatter: (value) => {
+                        // IMPORTANT: Set CurrentAirPurifierState Manually to prevent stuck in turning on/off
+                        this.AirPurifierService.updateCharacteristic(this.hap.Characteristic.CurrentAirPurifierState, value * 2);
+                        return [value];
+                    }
                 },
             });
             this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.CurrentAirPurifierState, {

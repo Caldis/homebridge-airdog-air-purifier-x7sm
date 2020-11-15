@@ -62,14 +62,19 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
   AirPurifierRegistryCharacters = () => {
     this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.Active, {
       get: {
-        formatter: (valueMapping) =>
-          valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
+        formatter: (valueMapping) => {
+          return valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
             ? 1
             : 0
+        }
       },
       set: {
         property: 'set_power',
-        formatter: (value: AirPurifierSwitchStatusSetCode) => [value]
+        formatter: (value: AirPurifierSwitchStatusSetCode) => {
+          // IMPORTANT: Set CurrentAirPurifierState Manually to prevent stuck in turning on/off
+          this.AirPurifierService.updateCharacteristic(this.hap.Characteristic.CurrentAirPurifierState, value * 2)
+          return [value]
+        }
       },
     })
     this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.CurrentAirPurifierState, {
