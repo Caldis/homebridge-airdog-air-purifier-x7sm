@@ -14,9 +14,10 @@ var ErrorMessages;
 const RE_CONNECT_THRESHOLD = 90000;
 const REQUEST_CONNECT_DEBOUNCE_THRESHOLD = 100;
 const REQUEST_PROPERTY_DEBOUNCE_THRESHOLD = 100;
+const CONNECTION_POOL = {};
+const CONNECTION_QUEUE = {};
 class MIoTDevice {
     constructor(props) {
-        this.deviceConnectQueue = [];
         // Properties
         this.MIoTPreviousProperties = {};
         this.MIoTSpecsMapping = {};
@@ -40,9 +41,10 @@ class MIoTDevice {
                 // Extract deviceId and attach to instance
                 device.did = MIoTDevice_utils_1.getDeviceId(device.id);
                 device.timeout = Date.now();
-                // Logger
+                // Update and resolve
                 this.device = device;
                 queue.forEach(resolve => resolve());
+                // Logger
                 this.log.info(`${this.identify.name} ${this.identify.address} connected.`);
                 return true;
             }
@@ -215,6 +217,21 @@ class MIoTDevice {
         // Device
         this.identify = props.identify;
         (async () => this.connect())();
+    }
+    get deviceConnectQueue() {
+        if (!Array.isArray(CONNECTION_QUEUE[this.identify.address])) {
+            CONNECTION_QUEUE[this.identify.address] = [];
+        }
+        return CONNECTION_QUEUE[this.identify.address];
+    }
+    set deviceConnectQueue(value) {
+        CONNECTION_QUEUE[this.identify.address] = value;
+    }
+    get device() {
+        return CONNECTION_POOL[this.identify.address];
+    }
+    set device(value) {
+        CONNECTION_POOL[this.identify.address] = value;
     }
     // Flags
     get isConnected() {

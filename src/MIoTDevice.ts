@@ -36,6 +36,9 @@ enum ErrorMessages {
 const RE_CONNECT_THRESHOLD = 90000
 const REQUEST_CONNECT_DEBOUNCE_THRESHOLD = 100
 const REQUEST_PROPERTY_DEBOUNCE_THRESHOLD = 100
+const CONNECTION_POOL: { [address: string]: DeviceInstance } = {}
+const CONNECTION_QUEUE: { [address: string]: ((...args: any[]) => void)[] } = {}
+
 
 export default class MIoTDevice {
 
@@ -45,8 +48,21 @@ export default class MIoTDevice {
   private readonly characteristicsService: Service
   // Device
   private readonly identify: MIoTDeviceIdentify
-  private deviceConnectQueue: (() => void)[] = []
-  private device?: DeviceInstance
+  get deviceConnectQueue () {
+    if (!Array.isArray(CONNECTION_QUEUE[this.identify.address])) {
+      CONNECTION_QUEUE[this.identify.address] = []
+    }
+    return CONNECTION_QUEUE[this.identify.address]
+  }
+  set deviceConnectQueue(value) {
+    CONNECTION_QUEUE[this.identify.address] = value
+  }
+  get device () {
+    return CONNECTION_POOL[this.identify.address]
+  }
+  set device (value) {
+    CONNECTION_POOL[this.identify.address] = value
+  }
   // Properties
   private MIoTPreviousProperties: MIOTSpecsResponseValueMapping = {}
   private MIoTSpecsMapping: MIOTSpecMapping = {}
@@ -92,9 +108,10 @@ export default class MIoTDevice {
       // Extract deviceId and attach to instance
       device.did = getDeviceId(device.id)
       device.timeout = Date.now()
-      // Logger
+      // Update and resolve
       this.device = device
       queue.forEach(resolve => resolve())
+      // Logger
       this.log.info(`${this.identify.name} ${this.identify.address} connected.`)
       return true
     } catch (e) {
