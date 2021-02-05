@@ -1,6 +1,6 @@
-import { DeviceConfigs } from 'miio'
 import { AirDogAirPurifierX7SM } from './devices/AirDogAirPurifierX7SM'
-import { AccessoryPlugin, API, HAP, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
+import { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
+import { SharedFoundation } from './shared/foundation'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
 
@@ -10,13 +10,13 @@ export = (api: API) => {
 
 class Platform implements StaticPlatformPlugin {
 
-  private readonly hap: HAP
-  private readonly log: Logging
   private readonly devices: DeviceConfigs
 
   constructor (logging: Logging, platformConfig: PlatformConfig, api: API) {
-    this.hap = api.hap
-    this.log = logging
+    // Foundation
+    SharedFoundation.hap = api.hap
+    SharedFoundation.log = logging
+    // Config
     this.devices = platformConfig.devices
   }
 
@@ -27,15 +27,9 @@ class Platform implements StaticPlatformPlugin {
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
   accessories (callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback(this.devices.reduce((acc, cur) =>
-      acc.concat([
-        new AirDogAirPurifierX7SM({
-          hap: this.hap,
-          log: this.log,
-          identify: cur,
-        }),
-      ]), [] as AccessoryPlugin[])
+    callback(this.devices.reduce((acc, identify) =>
+      acc.concat(new AirDogAirPurifierX7SM({ identify })), [] as AccessoryPlugin[])
     )
-    this.log.info(`${PLATFORM_NAME} platform is initialized`)
+    SharedFoundation.log.info(`${PLATFORM_NAME} platform is initialized`)
   }
 }

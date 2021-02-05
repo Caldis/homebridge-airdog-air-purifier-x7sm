@@ -1,5 +1,5 @@
-import { AccessoryPlugin, HAP, Logging, Service } from 'homebridge'
-import MIoTDevice, { MIoTDeviceIdentify } from '../MIoTDevice'
+import { AccessoryPlugin, Service } from 'homebridge'
+import MIoTDevice from '../MIoTDevice'
 import {
   AirPurifierFanLevelCodeMapping, AirPurifierFanLevelGetCode,
   AirPurifierFanLevelSetCode, AirPurifierLockGetCode, AirPurifierLockSetCode, AirPurifierModeGetCode,
@@ -8,10 +8,9 @@ import {
   AirPurifierSwitchStatusSetCode,
   Specs
 } from './AirDogAirPurifierX7SM.constant'
+import { SharedFoundation } from '../shared/foundation'
 
 type Props = {
-  hap: HAP
-  log: Logging
   identify: MIoTDeviceIdentify
 }
 
@@ -21,9 +20,6 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
   private readonly name: string
   private readonly token: string
   private readonly address: string
-  // Foundation
-  private readonly hap: HAP
-  private readonly log: Logging
   // Services
   private readonly informationService: Service
   private readonly AirPurifierService: Service
@@ -39,25 +35,22 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.name = props.identify.name
     this.token = props.identify.token
     this.address = props.identify.address
-    // Foundation
-    this.hap = props.hap
-    this.log = props.log
     // Services
-    this.informationService = new props.hap.Service.AccessoryInformation()
-      .setCharacteristic(this.hap.Characteristic.Manufacturer, 'AirDog')
-      .setCharacteristic(this.hap.Characteristic.Model, 'X7S(m)')
+    this.informationService = new SharedFoundation.hap.Service.AccessoryInformation()
+      .setCharacteristic(SharedFoundation.hap.Characteristic.Manufacturer, 'AirDog')
+      .setCharacteristic(SharedFoundation.hap.Characteristic.Model, 'X7S(m)')
     // AirPurifier
-    this.AirPurifierService = new this.hap.Service.AirPurifier(props.identify.name)
+    this.AirPurifierService = new SharedFoundation.hap.Service.AirPurifier(props.identify.name)
     this.AirPurifierDevice = new MIoTDevice({ ...props, characteristicsService: this.AirPurifierService })
     this.AirPurifierRegistrySpecs()
     this.AirPurifierRegistryCharacters()
     // AirPurifier: Sleep mode
-    this.AirPurifierSleepModeService = new this.hap.Service.Switch(`${props.identify.name}.SleepMode`)
+    this.AirPurifierSleepModeService = new SharedFoundation.hap.Service.Switch(`${props.identify.name}.SleepMode`)
     this.AirPurifierSleepModeDevice = new MIoTDevice({ ...props, characteristicsService: this.AirPurifierSleepModeService })
     this.AirPurifierSleepModeRegistrySpecs()
     this.AirPurifierSleepModeRegistryCharacters()
     // Sensor
-    this.SensorService = new this.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`)
+    this.SensorService = new SharedFoundation.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`)
     this.SensorDevice = new MIoTDevice({ ...props, characteristicsService: this.SensorService })
     this.SensorRegistrySpecs()
     this.SensorRegistryCharacters()
@@ -67,7 +60,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     Object.values(Specs).forEach(i => this.AirPurifierDevice.addMIIOSpec(i))
   }
   AirPurifierRegistryCharacters = () => {
-    this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.Active, {
+    this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.Active, {
       get: {
         formatter: (valueMapping) => {
           return valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
@@ -79,12 +72,12 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
         property: 'set_power',
         formatter: (value: AirPurifierSwitchStatusSetCode) => {
           // !!!!!!IMPORTANT: Set CurrentAirPurifierState Manually to prevent stuck in turning on/off
-          this.AirPurifierService.updateCharacteristic(this.hap.Characteristic.CurrentAirPurifierState, value * 2)
+          this.AirPurifierService.updateCharacteristic(SharedFoundation.hap.Characteristic.CurrentAirPurifierState, value * 2)
           return [value]
         }
       },
     })
-    this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.CurrentAirPurifierState, {
+    this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.CurrentAirPurifierState, {
       get: {
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
@@ -92,7 +85,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
             : 0
       },
     })
-    this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.TargetAirPurifierState, {
+    this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.TargetAirPurifierState, {
       get: {
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Auto ? 1 : 0
@@ -105,7 +98,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
             : [AirPurifierModeSetCode.Manual, previousProperty[Specs.AirPurifierFanLevel]]
       },
     })
-    this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.LockPhysicalControls, {
+    this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.LockPhysicalControls, {
       get: {
         formatter: (valueMapping) =>
           valueMapping[Specs.PhysicalControlLocked] === AirPurifierLockGetCode.Lock
@@ -120,7 +113,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
             : [AirPurifierLockSetCode.Unlock]
       },
     })
-    this.AirPurifierDevice.addMIIOCharacteristicListener(this.hap.Characteristic.RotationSpeed, {
+    this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.RotationSpeed, {
       get: {
         formatter: (valueMapping) =>
           AirPurifierFanLevelCodeMapping[
@@ -149,7 +142,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     Object.values(Specs).forEach(i => this.AirPurifierSleepModeDevice.addMIIOSpec(i))
   }
   AirPurifierSleepModeRegistryCharacters = () => {
-    this.AirPurifierSleepModeDevice.addMIIOCharacteristicListener(this.hap.Characteristic.On, {
+    this.AirPurifierSleepModeDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.On, {
       get: {
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Sleep
@@ -169,14 +162,14 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     Object.values(Specs).forEach(i => this.SensorDevice.addMIIOSpec(i))
   }
   SensorRegistryCharacters = () => {
-    this.SensorDevice.addMIIOCharacteristicListener(this.hap.Characteristic.StatusActive, {
+    this.SensorDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.StatusActive, {
       get: {
         formatter: (valueMapping) => {
           return valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
         }
       },
     })
-    this.SensorDevice.addMIIOCharacteristicListener(this.hap.Characteristic.AirQuality, {
+    this.SensorDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.AirQuality, {
       get: {
         formatter: (valueMapping) => {
           let HCHOLevel
@@ -208,12 +201,12 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
         }
       },
     })
-    this.SensorDevice.addMIIOCharacteristicListener(this.hap.Characteristic.PM2_5Density, {
+    this.SensorDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.PM2_5Density, {
       get: {
         formatter: (valueMapping) => valueMapping[Specs.EnvironmentPM25Density]
       },
     })
-    this.SensorDevice.addMIIOCharacteristicListener(this.hap.Characteristic.VOCDensity, {
+    this.SensorDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.VOCDensity, {
       get: {
         formatter: (valueMapping) => valueMapping[Specs.EnvironmentHCHODensity]
       },
@@ -225,7 +218,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
    * Typical this only ever happens at the pairing process.
    */
   identify (): void {
-    this.log.info(`Identifying ${this.name} ${this.address}`)
+    SharedFoundation.log.info(`Identifying ${this.name} ${this.address}`)
   }
 
   /*
