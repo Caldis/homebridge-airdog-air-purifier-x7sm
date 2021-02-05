@@ -11,11 +11,12 @@ const foundation_1 = require("./foundation");
 const MIoTDevice_utils_1 = require("../MIoTDevice.utils");
 const RE_CONNECT_THRESHOLD = 90000;
 const RE_CONNECT_FAILURE_THRESHOLD = 10000;
-const REQUEST_CONNECT_DEBOUNCE_THRESHOLD = 100;
+const REQUEST_CONNECT_DEBOUNCE_THRESHOLD = 20;
 class Device {
     constructor() {
         this.device = {};
         this.isConnected = (identify) => {
+            foundation_1.SharedFoundation.log.debug(`SHARED DEVICE CHECKING CONNECTING ${identify.name} ${identify.address}`, Date.now());
             const deviceInstance = this.device[identify.address];
             if (!deviceInstance)
                 return false;
@@ -30,7 +31,10 @@ class Device {
                 // Log
                 foundation_1.SharedFoundation.log.info(`${identify.name} ${identify.address} start ${!!this.device[identify.address] ? 're-' : ''}connecting.`);
                 // Create device instance
-                const device = await miio_1.default.device({ address: identify.address, token: identify.token });
+                const device = await miio_1.default.device({
+                    address: identify.address,
+                    token: identify.token
+                });
                 device.did = MIoTDevice_utils_1.getDeviceId(device.id);
                 device.timeout = Date.now();
                 // Update
@@ -44,7 +48,8 @@ class Device {
                 // Retry if failure
                 if (this.isConnected(identify))
                     return;
-                foundation_1.SharedFoundation.log.info(`${identify.name} ${identify.address} connect failure, reconnecting ...`, e);
+                foundation_1.SharedFoundation.log.info(`${identify.name} ${identify.address} ${identify.token} connect failure, reconnecting ...`);
+                foundation_1.SharedFoundation.log.error(e);
                 await MIoTDevice_utils_1.sleep(RE_CONNECT_FAILURE_THRESHOLD);
                 await this.requestConnect(identify);
             }
@@ -52,6 +57,7 @@ class Device {
         this.debounceRequestConnect = lodash_debounce_1.default(this.requestConnect, REQUEST_CONNECT_DEBOUNCE_THRESHOLD);
     }
     getInstance(identify) {
+        foundation_1.SharedFoundation.log.debug(`SHARED DEVICE GETTING INSTANCE ${identify.name} ${identify.address}`, Date.now());
         // return this.device[identify]
         return new Promise(resolve => {
             // Queue update

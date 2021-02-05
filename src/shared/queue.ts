@@ -5,6 +5,9 @@ class Queue {
   private queue: { [address: string]: Resolver[] } = {}
 
   public append(identify: MIoTDeviceIdentify, resolver: Resolver) {
+    if (!Array.isArray(this.queue[identify.address])) {
+      this.queue[identify.address] = []
+    }
     this.queue[identify.address].push(resolver)
   }
   public resolve(identify: MIoTDeviceIdentify, value: any) {

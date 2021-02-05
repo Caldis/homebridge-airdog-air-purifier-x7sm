@@ -6,6 +6,9 @@ class Queue {
         this.queue = {};
     }
     append(identify, resolver) {
+        if (!Array.isArray(this.queue[identify.address])) {
+            this.queue[identify.address] = [];
+        }
         this.queue[identify.address].push(resolver);
     }
     resolve(identify, value) {
