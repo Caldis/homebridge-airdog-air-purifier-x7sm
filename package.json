@@ -1,6 +1,6 @@
 {
   "name": "homebridge-airdog-air-purifier-x7sm",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "HomeBridge AirDog Air Purifier X7S(m)",
   "main": "dist/index.js",
   "dependencies": {
