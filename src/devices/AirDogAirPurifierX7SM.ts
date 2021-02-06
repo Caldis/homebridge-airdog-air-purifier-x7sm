@@ -1,5 +1,4 @@
 import { AccessoryPlugin, Service } from 'homebridge'
-import MIoTDevice from '../MIoTDevice'
 import {
   AirPurifierFanLevelCodeMapping, AirPurifierFanLevelGetCode,
   AirPurifierFanLevelSetCode, AirPurifierLockGetCode, AirPurifierLockSetCode, AirPurifierModeGetCode,
@@ -8,7 +7,7 @@ import {
   AirPurifierSwitchStatusSetCode,
   Specs
 } from './AirDogAirPurifierX7SM.constant'
-import { SharedFoundation } from '../shared/foundation'
+import { MIoTDevice, MIoTDeviceIdentify, SharedFoundation } from 'homebridge-miot-devices'
 
 type Props = {
   identify: MIoTDeviceIdentify

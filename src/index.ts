@@ -1,6 +1,6 @@
 import { AirDogAirPurifierX7SM } from './devices/AirDogAirPurifierX7SM'
 import { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
-import { SharedFoundation } from './shared/foundation'
+import { DeviceConfigs, SharedFoundation } from 'homebridge-miot-devices'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
 
