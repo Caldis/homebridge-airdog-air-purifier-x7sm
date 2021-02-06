@@ -1,10 +1,10 @@
 {
   "name": "homebridge-airdog-air-purifier-x7sm",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "HomeBridge AirDog Air Purifier X7S(m)",
   "main": "dist/index.js",
   "dependencies": {
-    "homebridge-miot-devices": "1.2.0",
+    "homebridge-miot-devices": "1.3.0",
     "lodash.debounce": "^4.0.8",
     "miio": "^0.15.6"
   },
