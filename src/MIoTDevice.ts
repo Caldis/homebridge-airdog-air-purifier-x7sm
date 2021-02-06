@@ -51,13 +51,10 @@ export default class MIoTDevice {
    * MIoT
    */
   // Spec
-  public addMIoTSpec = (spec: MIoTSpec) => {
-    this.MIoTSpecsMapping[spec.name] = spec
+  public addMIoTSpec = (specs: MIoTSpecs) => {
+    Object.values(specs).forEach(i => this.MIoTSpecsMapping[i.name] = i)
   }
-  public getMIoTSpec = async (name?: string | string[]) => {
-    // Guard
-    const device = await SharedDevice.getInstance(this.identify)
-    if (!device?.did) throw new Error(ErrorMessages.NotConnect)
+  private getMIoTSpec = async (device: DeviceInstance, name?: string | string[]) => {
     // Action: getAll
     if (!name) return Object.values(this.MIoTSpecsMapping).map(i => ({ ...i, did: device.did }))
     // Action: getByName
@@ -79,9 +76,12 @@ export default class MIoTDevice {
   // multiple requests will be triggered in order to request the corresponding target value.
   // These fragmentation request will cause the MIoT device to refuse to response or weak performance
   // and cause the Accessory display "Not Response" in iOS Home app.
-  private debounceRequestMIoTProperty = debounce(async (device: DeviceInstance) => {
+  private debounceRequestMIoTProperty = debounce(async () => {
+    // Guard
+    const device = await SharedDevice.getInstance(this.identify)
+    if (!device?.did) throw new Error(ErrorMessages.NotConnect)
     // Spec
-    const targetSpecs = await this.getMIoTSpec()
+    const targetSpecs = await this.getMIoTSpec(device)
     // Pull queue
     const queue = [...this.MIoTSpecsQueue]
     this.MIoTSpecsQueue = []
@@ -106,15 +106,12 @@ export default class MIoTDevice {
   }
   // Events
   private pullMIoTProperty = async (): Promise<MIoTSpecsResponseValueMapping> => {
-    // Guard
-    const device = await SharedDevice.getInstance(this.identify)
-    if (!device?.did) throw new Error(ErrorMessages.NotConnect)
     // Action
     return new Promise((resolve => {
       // Queue update
       this.MIoTSpecsQueue.push(resolve)
       // Trigger Property getter
-      this.debounceRequestMIoTProperty(device)
+      this.debounceRequestMIoTProperty()
     }))
   }
   public addMIoTCharacteristicListener(type: any, config: RegisterConfig<MIoTSpecsResponseValueMapping>) {
@@ -156,10 +153,10 @@ export default class MIoTDevice {
    * MIIO
    */
   // Spec
-  public addMIIOSpec = (spec: MIIOSpec) => {
-    this.MIIOSpecsMapping[spec] = spec
+  public addMIIOSpec = (specs: MIIOSpecMapping) => {
+    Object.values(specs).forEach(i => this.MIIOSpecsMapping[i] = i)
   }
-  public getMIIOSpec = async (name?: string | string[]) => {
+  private getMIIOSpec = async (name?: string | string[]) => {
     // Action: getAll
     if (!name) return Object.values(this.MIIOSpecsMapping)
     // Action: getByName
@@ -171,7 +168,10 @@ export default class MIoTDevice {
   }
   // Properties
   // Merging request by debounce
-  private debounceRequestMIIOProperty = debounce(async (device: DeviceInstance) => {
+  private debounceRequestMIIOProperty = debounce(async () => {
+    // Guard
+    const device = await SharedDevice.getInstance(this.identify)
+    if (!device?.did) throw new Error(ErrorMessages.NotConnect)
     // Spec
     const targetSpecs = await this.getMIIOSpec()
     // Pull queue
@@ -196,15 +196,12 @@ export default class MIoTDevice {
   }
   // Events
   private pullMIIOProperty = async (): Promise<MIIOSpecResponseValueMapping> => {
-    // Guard
-    const device = await SharedDevice.getInstance(this.identify)
-    if (!device?.did) throw new Error(ErrorMessages.NotConnect)
     // Action
     return new Promise((resolve => {
       // Queue update
       this.MIIOSpecsQueue.push(resolve)
       // Trigger Property getter
-      this.debounceRequestMIIOProperty(device)
+      this.debounceRequestMIIOProperty()
     }))
   }
   public addMIIOCharacteristicListener(type: any, config: RegisterConfig<MIIOSpecResponseValueMapping>) {

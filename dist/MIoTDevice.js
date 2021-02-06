@@ -26,14 +26,10 @@ class MIoTDevice {
          * MIoT
          */
         // Spec
-        this.addMIoTSpec = (spec) => {
-            this.MIoTSpecsMapping[spec.name] = spec;
+        this.addMIoTSpec = (specs) => {
+            Object.values(specs).forEach(i => this.MIoTSpecsMapping[i.name] = i);
         };
-        this.getMIoTSpec = async (name) => {
-            // Guard
-            const device = await device_1.SharedDevice.getInstance(this.identify);
-            if (!(device === null || device === void 0 ? void 0 : device.did))
-                throw new Error(ErrorMessages.NotConnect);
+        this.getMIoTSpec = async (device, name) => {
             // Action: getAll
             if (!name)
                 return Object.values(this.MIoTSpecsMapping).map(i => ({ ...i, did: device.did }));
@@ -59,9 +55,13 @@ class MIoTDevice {
         // multiple requests will be triggered in order to request the corresponding target value.
         // These fragmentation request will cause the MIoT device to refuse to response or weak performance
         // and cause the Accessory display "Not Response" in iOS Home app.
-        this.debounceRequestMIoTProperty = lodash_debounce_1.default(async (device) => {
+        this.debounceRequestMIoTProperty = lodash_debounce_1.default(async () => {
+            // Guard
+            const device = await device_1.SharedDevice.getInstance(this.identify);
+            if (!(device === null || device === void 0 ? void 0 : device.did))
+                throw new Error(ErrorMessages.NotConnect);
             // Spec
-            const targetSpecs = await this.getMIoTSpec();
+            const targetSpecs = await this.getMIoTSpec(device);
             // Pull queue
             const queue = [...this.MIoTSpecsQueue];
             this.MIoTSpecsQueue = [];
@@ -88,24 +88,20 @@ class MIoTDevice {
         };
         // Events
         this.pullMIoTProperty = async () => {
-            // Guard
-            const device = await device_1.SharedDevice.getInstance(this.identify);
-            if (!(device === null || device === void 0 ? void 0 : device.did))
-                throw new Error(ErrorMessages.NotConnect);
             // Action
             return new Promise((resolve => {
                 // Queue update
                 this.MIoTSpecsQueue.push(resolve);
                 // Trigger Property getter
-                this.debounceRequestMIoTProperty(device);
+                this.debounceRequestMIoTProperty();
             }));
         };
         /*
          * MIIO
          */
         // Spec
-        this.addMIIOSpec = (spec) => {
-            this.MIIOSpecsMapping[spec] = spec;
+        this.addMIIOSpec = (specs) => {
+            Object.values(specs).forEach(i => this.MIIOSpecsMapping[i] = i);
         };
         this.getMIIOSpec = async (name) => {
             // Action: getAll
@@ -121,7 +117,11 @@ class MIoTDevice {
         };
         // Properties
         // Merging request by debounce
-        this.debounceRequestMIIOProperty = lodash_debounce_1.default(async (device) => {
+        this.debounceRequestMIIOProperty = lodash_debounce_1.default(async () => {
+            // Guard
+            const device = await device_1.SharedDevice.getInstance(this.identify);
+            if (!(device === null || device === void 0 ? void 0 : device.did))
+                throw new Error(ErrorMessages.NotConnect);
             // Spec
             const targetSpecs = await this.getMIIOSpec();
             // Pull queue
@@ -147,16 +147,12 @@ class MIoTDevice {
         };
         // Events
         this.pullMIIOProperty = async () => {
-            // Guard
-            const device = await device_1.SharedDevice.getInstance(this.identify);
-            if (!(device === null || device === void 0 ? void 0 : device.did))
-                throw new Error(ErrorMessages.NotConnect);
             // Action
             return new Promise((resolve => {
                 // Queue update
                 this.MIIOSpecsQueue.push(resolve);
                 // Trigger Property getter
-                this.debounceRequestMIIOProperty(device);
+                this.debounceRequestMIIOProperty();
             }));
         };
         // HomeBridge

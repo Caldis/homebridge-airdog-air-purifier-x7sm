@@ -9,9 +9,7 @@ const AirDogAirPurifierX7SM_constant_1 = require("./AirDogAirPurifierX7SM.consta
 const foundation_1 = require("../shared/foundation");
 class AirDogAirPurifierX7SM {
     constructor(props) {
-        this.AirPurifierRegistrySpecs = () => {
-            Object.values(AirDogAirPurifierX7SM_constant_1.Specs).forEach(i => this.AirPurifierDevice.addMIIOSpec(i));
-        };
+        this.AirPurifierRegistrySpecs = () => this.AirPurifierDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
         this.AirPurifierRegistryCharacters = () => {
             this.AirPurifierDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.Active, {
                 get: {
@@ -87,9 +85,7 @@ class AirDogAirPurifierX7SM {
                 },
             });
         };
-        this.AirPurifierSleepModeRegistrySpecs = () => {
-            Object.values(AirDogAirPurifierX7SM_constant_1.Specs).forEach(i => this.AirPurifierSleepModeDevice.addMIIOSpec(i));
-        };
+        this.AirPurifierSleepModeRegistrySpecs = () => this.AirPurifierSleepModeDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
         this.AirPurifierSleepModeRegistryCharacters = () => {
             this.AirPurifierSleepModeDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.On, {
                 get: {
@@ -105,18 +101,16 @@ class AirDogAirPurifierX7SM {
                 },
             });
         };
-        this.SensorRegistrySpecs = () => {
-            Object.values(AirDogAirPurifierX7SM_constant_1.Specs).forEach(i => this.SensorDevice.addMIIOSpec(i));
-        };
-        this.SensorRegistryCharacters = () => {
-            this.SensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.StatusActive, {
+        this.AirPurifierSensorRegistrySpecs = () => this.AirPurifierSensorDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
+        this.AirPurifierSensorRegistryCharacters = () => {
+            this.AirPurifierSensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.StatusActive, {
                 get: {
                     formatter: (valueMapping) => {
                         return valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] === AirDogAirPurifierX7SM_constant_1.AirPurifierSwitchStatusGetCode.On;
                     }
                 },
             });
-            this.SensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.AirQuality, {
+            this.AirPurifierSensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.AirQuality, {
                 get: {
                     formatter: (valueMapping) => {
                         let HCHOLevel;
@@ -156,12 +150,12 @@ class AirDogAirPurifierX7SM {
                     }
                 },
             });
-            this.SensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.PM2_5Density, {
+            this.AirPurifierSensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.PM2_5Density, {
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.EnvironmentPM25Density]
                 },
             });
-            this.SensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.VOCDensity, {
+            this.AirPurifierSensorDevice.addMIIOCharacteristicListener(foundation_1.SharedFoundation.hap.Characteristic.VOCDensity, {
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.EnvironmentHCHODensity]
                 },
@@ -186,10 +180,10 @@ class AirDogAirPurifierX7SM {
         this.AirPurifierSleepModeRegistrySpecs();
         this.AirPurifierSleepModeRegistryCharacters();
         // Sensor
-        this.SensorService = new foundation_1.SharedFoundation.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`);
-        this.SensorDevice = new MIoTDevice_1.default({ ...props, characteristicsService: this.SensorService });
-        this.SensorRegistrySpecs();
-        this.SensorRegistryCharacters();
+        this.AirPurifierSensorService = new foundation_1.SharedFoundation.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`);
+        this.AirPurifierSensorDevice = new MIoTDevice_1.default({ ...props, characteristicsService: this.AirPurifierSensorService });
+        this.AirPurifierSensorRegistrySpecs();
+        this.AirPurifierSensorRegistryCharacters();
     }
     /*
      * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
@@ -207,7 +201,7 @@ class AirDogAirPurifierX7SM {
             this.informationService,
             this.AirPurifierService,
             this.AirPurifierSleepModeService,
-            this.SensorService,
+            this.AirPurifierSensorService,
         ];
     }
 }

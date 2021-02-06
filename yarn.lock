@@ -503,6 +503,14 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
+homebridge-miot-devices@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/homebridge-miot-devices/-/homebridge-miot-devices-1.0.2.tgz#6291c922aaa13831ad69f6a7abd39f787e074ad0"
+  integrity sha512-ZGYOraRDKc75ffsLUY8z3+95E+TCX4lnL3FN0KKS8t8Z+qUBXMWsmoDHdkWxtEHB8tjV0yu7m0oARjo+wLZjoQ==
+  dependencies:
+    lodash.debounce "^4.0.8"
+    miio "^0.15.6"
+
 homebridge@^1.1.6:
   version "1.1.7"
   resolved "https://registry.yarnpkg.com/homebridge/-/homebridge-1.1.7.tgz#46b81e9de5371a05d44910ac4a8f7dca6e88ba21"
