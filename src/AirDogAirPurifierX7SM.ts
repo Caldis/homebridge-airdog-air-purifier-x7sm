@@ -34,7 +34,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.name = props.identify.name
     this.token = props.identify.token
     this.address = props.identify.address
-    // Services
+    // Information
     this.informationService = new SharedFoundation.hap.Service.AccessoryInformation()
       .setCharacteristic(SharedFoundation.hap.Characteristic.Manufacturer, 'AirDog')
       .setCharacteristic(SharedFoundation.hap.Characteristic.Model, 'X7S(m)')
