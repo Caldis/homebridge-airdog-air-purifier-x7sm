@@ -1,4 +1,4 @@
-import { AirDogAirPurifierX7SM } from './devices/AirDogAirPurifierX7SM'
+import { AirDogAirPurifierX7SM } from './AirDogAirPurifierX7SM'
 import { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
 import { DeviceConfigs, SharedFoundation } from 'homebridge-miot-devices'
 

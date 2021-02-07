@@ -1,5 +1,5 @@
 "use strict";
-const AirDogAirPurifierX7SM_1 = require("./devices/AirDogAirPurifierX7SM");
+const AirDogAirPurifierX7SM_1 = require("./AirDogAirPurifierX7SM");
 const homebridge_miot_devices_1 = require("homebridge-miot-devices");
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM';
 class Platform {
