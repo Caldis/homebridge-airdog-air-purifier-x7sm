@@ -1,6 +1,6 @@
 import { AirDogAirPurifierX7SM } from './AirDogAirPurifierX7SM'
 import { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
-import { DeviceConfigs, SharedFoundation } from 'homebridge-miot-devices'
+import { initMIoT, DeviceConfigs, SharedFoundation } from 'homebridge-miot-devices'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
 
@@ -14,8 +14,7 @@ class Platform implements StaticPlatformPlugin {
 
   constructor (logging: Logging, platformConfig: PlatformConfig, api: API) {
     // Foundation
-    SharedFoundation.hap = api.hap
-    SharedFoundation.log = logging
+    initMIoT({ hap: api.hap, log: logging, config: platformConfig.devices })
     // Config
     this.devices = platformConfig.devices
   }
@@ -27,9 +26,7 @@ class Platform implements StaticPlatformPlugin {
    * The set of exposed accessories CANNOT change over the lifetime of the plugin!
    */
   accessories (callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback(this.devices.reduce((acc, identify) =>
-      acc.concat(new AirDogAirPurifierX7SM({ identify })), [] as AccessoryPlugin[])
-    )
+    callback(this.devices.map(identify => new AirDogAirPurifierX7SM({ identify })))
     SharedFoundation.log.info(`${PLATFORM_NAME} platform is initialized`)
   }
 }

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AirDogAirPurifierX7SM = void 0;
-const AirDogAirPurifierX7SM_constant_1 = require("./AirDogAirPurifierX7SM.constant");
 const homebridge_miot_devices_1 = require("homebridge-miot-devices");
+const AirDogAirPurifierX7SM_constant_1 = require("./AirDogAirPurifierX7SM.constant");
 class AirDogAirPurifierX7SM {
     constructor(props) {
         this.AirPurifierSetup = () => {
@@ -161,7 +161,7 @@ class AirDogAirPurifierX7SM {
         this.name = props.identify.name;
         this.token = props.identify.token;
         this.address = props.identify.address;
-        // Services
+        // Information
         this.informationService = new homebridge_miot_devices_1.SharedFoundation.hap.Service.AccessoryInformation()
             .setCharacteristic(homebridge_miot_devices_1.SharedFoundation.hap.Characteristic.Manufacturer, 'AirDog')
             .setCharacteristic(homebridge_miot_devices_1.SharedFoundation.hap.Characteristic.Model, 'X7S(m)');
