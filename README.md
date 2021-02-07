@@ -18,16 +18,21 @@ npm i homebridge-airdog-air-purifier-x7sm@latest
 
 ## 配置
 ```json
-"platforms": [
-   {
-       "platform": "AirDogAirPurifierX7SM",
-       "devices": [
-           {
-               "name": "Name",
-               "address": "IP Address",
-               "token": "Token"
-           }
-       ]
-   }
-],
+{
+  "platforms": [
+    {
+      "platform": "AirDogAirPurifierX7SM",
+      "devices": [
+        {
+          "name": "Name",
+          "address": "IP Address",
+          "token": "Token"
+        }
+      ]
+    }
+  ]
+}
 ```
+
+## 参考
+https://github.com/syssi/xiaomi_airpurifier/issues/72#issuecomment-711722428

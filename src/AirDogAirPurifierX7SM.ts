@@ -41,22 +41,19 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     // AirPurifier
     this.AirPurifierService = new SharedFoundation.hap.Service.AirPurifier(props.identify.name)
     this.AirPurifierDevice = new MIoTDevice({ ...props, characteristicsService: this.AirPurifierService })
-    this.AirPurifierRegistrySpecs()
-    this.AirPurifierRegistryCharacters()
+    this.AirPurifierSetup()
     // AirPurifier: Sleep mode
     this.AirPurifierSleepModeService = new SharedFoundation.hap.Service.Switch(`${props.identify.name}.SleepMode`)
     this.AirPurifierSleepModeDevice = new MIoTDevice({ ...props, characteristicsService: this.AirPurifierSleepModeService })
-    this.AirPurifierSleepModeRegistrySpecs()
-    this.AirPurifierSleepModeRegistryCharacters()
-    // Sensor
+    this.AirPurifierSleepModeSetup()
+    // AirPurifier: Sensor
     this.AirPurifierSensorService = new SharedFoundation.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`)
     this.AirPurifierSensorDevice = new MIoTDevice({ ...props, characteristicsService: this.AirPurifierSensorService })
-    this.AirPurifierSensorRegistrySpecs()
-    this.AirPurifierSensorRegistryCharacters()
+    this.AirPurifierSensorSetup()
   }
 
-  AirPurifierRegistrySpecs = () => this.AirPurifierDevice.addMIIOSpec(Specs)
-  AirPurifierRegistryCharacters = () => {
+  AirPurifierSetup = () => {
+    this.AirPurifierDevice.addMIIOSpec(Specs)
     this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.Active, {
       get: {
         formatter: (valueMapping) => {
@@ -113,9 +110,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.RotationSpeed, {
       get: {
         formatter: (valueMapping) =>
-          AirPurifierFanLevelCodeMapping[
-            valueMapping[Specs.AirPurifierFanLevel] as AirPurifierFanLevelGetCode
-            ]
+          AirPurifierFanLevelCodeMapping[valueMapping[Specs.AirPurifierFanLevel] as AirPurifierFanLevelGetCode]
       },
       set: {
         property: 'set_wind',
@@ -135,8 +130,8 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       },
     })
   }
-  AirPurifierSleepModeRegistrySpecs = () => this.AirPurifierSleepModeDevice.addMIIOSpec(Specs)
-  AirPurifierSleepModeRegistryCharacters = () => {
+  AirPurifierSleepModeSetup = () => {
+    this.AirPurifierSleepModeDevice.addMIIOSpec(Specs)
     this.AirPurifierSleepModeDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.On, {
       get: {
         formatter: (valueMapping) =>
@@ -153,8 +148,8 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       },
     })
   }
-  AirPurifierSensorRegistrySpecs = () => this.AirPurifierSensorDevice.addMIIOSpec(Specs)
-  AirPurifierSensorRegistryCharacters = () => {
+  AirPurifierSensorSetup = () => {
+    this.AirPurifierSensorDevice.addMIIOSpec(Specs)
     this.AirPurifierSensorDevice.addMIIOCharacteristicListener(SharedFoundation.hap.Characteristic.StatusActive, {
       get: {
         formatter: (valueMapping) => {

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "homepage": "https://github.com/Caldis/homebridge-airdog-air-purifier-x7sm",
   "dependencies": {
-    "homebridge-miot-devices": "^1.4.0"
+    "homebridge-miot-devices": "^1.4.3"
   },
   "devDependencies": {
     "@types/node": "^14.14.6",
