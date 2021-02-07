@@ -24,4 +24,3 @@ class Platform {
 module.exports = (api) => {
     api.registerPlatform(PLATFORM_NAME, Platform);
 };
-//# sourceMappingURL=index.js.map

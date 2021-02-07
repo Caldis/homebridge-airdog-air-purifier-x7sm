@@ -85,4 +85,3 @@ var AirPurifierCleanCode;
     AirPurifierCleanCode["Yes"] = "y";
     AirPurifierCleanCode["No"] = "n";
 })(AirPurifierCleanCode = exports.AirPurifierCleanCode || (exports.AirPurifierCleanCode = {}));
-//# sourceMappingURL=AirDogAirPurifierX7SM.constant.js.map

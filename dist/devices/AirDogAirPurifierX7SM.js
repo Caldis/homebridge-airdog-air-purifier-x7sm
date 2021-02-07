@@ -202,4 +202,3 @@ class AirDogAirPurifierX7SM {
     }
 }
 exports.AirDogAirPurifierX7SM = AirDogAirPurifierX7SM;
-//# sourceMappingURL=AirDogAirPurifierX7SM.js.map
