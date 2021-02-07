@@ -5,8 +5,8 @@ const AirDogAirPurifierX7SM_constant_1 = require("./AirDogAirPurifierX7SM.consta
 const homebridge_miot_devices_1 = require("homebridge-miot-devices");
 class AirDogAirPurifierX7SM {
     constructor(props) {
-        this.AirPurifierRegistrySpecs = () => this.AirPurifierDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
-        this.AirPurifierRegistryCharacters = () => {
+        this.AirPurifierSetup = () => {
+            this.AirPurifierDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
             this.AirPurifierDevice.addMIIOCharacteristicListener(homebridge_miot_devices_1.SharedFoundation.hap.Characteristic.Active, {
                 get: {
                     formatter: (valueMapping) => {
@@ -81,8 +81,8 @@ class AirDogAirPurifierX7SM {
                 },
             });
         };
-        this.AirPurifierSleepModeRegistrySpecs = () => this.AirPurifierSleepModeDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
-        this.AirPurifierSleepModeRegistryCharacters = () => {
+        this.AirPurifierSleepModeSetup = () => {
+            this.AirPurifierSleepModeDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
             this.AirPurifierSleepModeDevice.addMIIOCharacteristicListener(homebridge_miot_devices_1.SharedFoundation.hap.Characteristic.On, {
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierMode] === AirDogAirPurifierX7SM_constant_1.AirPurifierModeGetCode.Sleep
@@ -97,8 +97,8 @@ class AirDogAirPurifierX7SM {
                 },
             });
         };
-        this.AirPurifierSensorRegistrySpecs = () => this.AirPurifierSensorDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
-        this.AirPurifierSensorRegistryCharacters = () => {
+        this.AirPurifierSensorSetup = () => {
+            this.AirPurifierSensorDevice.addMIIOSpec(AirDogAirPurifierX7SM_constant_1.Specs);
             this.AirPurifierSensorDevice.addMIIOCharacteristicListener(homebridge_miot_devices_1.SharedFoundation.hap.Characteristic.StatusActive, {
                 get: {
                     formatter: (valueMapping) => {
@@ -168,18 +168,15 @@ class AirDogAirPurifierX7SM {
         // AirPurifier
         this.AirPurifierService = new homebridge_miot_devices_1.SharedFoundation.hap.Service.AirPurifier(props.identify.name);
         this.AirPurifierDevice = new homebridge_miot_devices_1.MIoTDevice({ ...props, characteristicsService: this.AirPurifierService });
-        this.AirPurifierRegistrySpecs();
-        this.AirPurifierRegistryCharacters();
+        this.AirPurifierSetup();
         // AirPurifier: Sleep mode
         this.AirPurifierSleepModeService = new homebridge_miot_devices_1.SharedFoundation.hap.Service.Switch(`${props.identify.name}.SleepMode`);
         this.AirPurifierSleepModeDevice = new homebridge_miot_devices_1.MIoTDevice({ ...props, characteristicsService: this.AirPurifierSleepModeService });
-        this.AirPurifierSleepModeRegistrySpecs();
-        this.AirPurifierSleepModeRegistryCharacters();
-        // Sensor
+        this.AirPurifierSleepModeSetup();
+        // AirPurifier: Sensor
         this.AirPurifierSensorService = new homebridge_miot_devices_1.SharedFoundation.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`);
         this.AirPurifierSensorDevice = new homebridge_miot_devices_1.MIoTDevice({ ...props, characteristicsService: this.AirPurifierSensorService });
-        this.AirPurifierSensorRegistrySpecs();
-        this.AirPurifierSensorRegistryCharacters();
+        this.AirPurifierSensorSetup();
     }
     /*
      * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
