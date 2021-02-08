@@ -1,11 +1,11 @@
 {
-  "version": "1.6.4",
+  "version": "1.7.0",
   "name": "homebridge-airdog-air-purifier-x7sm",
   "description": "HomeBridge AirDog Air Purifier X7S(m)",
   "main": "dist/index.js",
   "homepage": "https://github.com/Caldis/homebridge-airdog-air-purifier-x7sm",
   "dependencies": {
-    "homebridge-miot-devices": "latest"
+    "homebridge-mi-devices": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

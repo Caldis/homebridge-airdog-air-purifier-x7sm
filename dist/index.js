@@ -1,11 +1,11 @@
 "use strict";
 const AirDogAirPurifierX7SM_1 = require("./AirDogAirPurifierX7SM");
-const homebridge_miot_devices_1 = require("homebridge-miot-devices");
+const homebridge_mi_devices_1 = require("homebridge-mi-devices");
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM';
 class Platform {
     constructor(logging, platformConfig, api) {
         // Foundation
-        homebridge_miot_devices_1.initMIoT({ hap: api.hap, log: logging, config: platformConfig.devices });
+        homebridge_mi_devices_1.initMiDevice({ hap: api.hap, log: logging });
         // Config
         this.devices = platformConfig.devices;
     }
@@ -17,7 +17,7 @@ class Platform {
      */
     accessories(callback) {
         callback(this.devices.map(identify => new AirDogAirPurifierX7SM_1.AirDogAirPurifierX7SM({ identify })));
-        homebridge_miot_devices_1.SharedFoundation.log.info(`${PLATFORM_NAME} platform is initialized`);
+        homebridge_mi_devices_1.SharedFoundation.log.info(`${PLATFORM_NAME} platform is initialized`);
     }
 }
 module.exports = (api) => {

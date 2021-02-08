@@ -1,6 +1,6 @@
 import { AirDogAirPurifierX7SM } from './AirDogAirPurifierX7SM'
 import { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
-import { initMIoT, DeviceConfigs, SharedFoundation } from 'homebridge-miot-devices'
+import { initMiDevice, DeviceConfigs, SharedFoundation } from 'homebridge-mi-devices'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
 
@@ -14,7 +14,7 @@ class Platform implements StaticPlatformPlugin {
 
   constructor (logging: Logging, platformConfig: PlatformConfig, api: API) {
     // Foundation
-    initMIoT({ hap: api.hap, log: logging, config: platformConfig.devices })
+    initMiDevice({ hap: api.hap, log: logging })
     // Config
     this.devices = platformConfig.devices
   }
