@@ -1,6 +1,6 @@
 import { AirDogAirPurifierX7SM } from './AirDogAirPurifierX7SM'
 import { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin, } from 'homebridge'
-import { initMiDevice, DeviceConfigs, SharedFoundation } from 'homebridge-mi-devices'
+import { initMiDevice, DeviceConfigs, Shared } from 'homebridge-mi-devices'
 
 const PLATFORM_NAME = 'AirDogAirPurifierX7SM'
 
@@ -27,6 +27,6 @@ class Platform implements StaticPlatformPlugin {
    */
   accessories (callback: (foundAccessories: AccessoryPlugin[]) => void): void {
     callback(this.devices.map(identify => new AirDogAirPurifierX7SM({ identify })))
-    SharedFoundation.log.info(`${PLATFORM_NAME} platform is initialized`)
+    Shared.log.info(`${PLATFORM_NAME} platform is initialized`)
   }
 }

@@ -6,8 +6,7 @@ const AirDogAirPurifierX7SM_constant_1 = require("./AirDogAirPurifierX7SM.consta
 class AirDogAirPurifierX7SM {
     constructor(props) {
         this.AirPurifierSetup = () => {
-            this.AirPurifierDevice.addSpec(AirDogAirPurifierX7SM_constant_1.Specs);
-            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.Active, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.Active, {
                 get: {
                     formatter: (valueMapping) => {
                         return valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] === AirDogAirPurifierX7SM_constant_1.AirPurifierSwitchStatusGetCode.On
@@ -20,19 +19,19 @@ class AirDogAirPurifierX7SM {
                     formatter: (value) => {
                         // !!!!!!IMPORTANT: Set CurrentAirPurifierState Manually to prevent stuck in turning on/off
                         const v = value;
-                        this.AirPurifierService.updateCharacteristic(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.CurrentAirPurifierState, v * 2);
+                        this.AirPurifierService.updateCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.CurrentAirPurifierState, v * 2);
                         return [v];
                     }
                 },
             });
-            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.CurrentAirPurifierState, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.CurrentAirPurifierState, {
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] === AirDogAirPurifierX7SM_constant_1.AirPurifierSwitchStatusGetCode.On
                         ? 2
                         : 0
                 },
             });
-            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.TargetAirPurifierState, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.TargetAirPurifierState, {
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierMode] === AirDogAirPurifierX7SM_constant_1.AirPurifierModeGetCode.Auto ? 1 : 0
                 },
@@ -43,7 +42,7 @@ class AirDogAirPurifierX7SM {
                         : [AirDogAirPurifierX7SM_constant_1.AirPurifierModeSetCode.Manual, previousProperty[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierFanLevel]]
                 },
             });
-            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.LockPhysicalControls, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.LockPhysicalControls, {
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.PhysicalControlLocked] === AirDogAirPurifierX7SM_constant_1.AirPurifierLockGetCode.Lock
                         ? 1
@@ -56,7 +55,7 @@ class AirDogAirPurifierX7SM {
                         : [AirDogAirPurifierX7SM_constant_1.AirPurifierLockSetCode.Unlock]
                 },
             });
-            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.RotationSpeed, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.RotationSpeed, {
                 get: {
                     formatter: (valueMapping) => AirDogAirPurifierX7SM_constant_1.AirPurifierFanLevelCodeMapping[valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierFanLevel]]
                 },
@@ -82,9 +81,9 @@ class AirDogAirPurifierX7SM {
                 },
             });
         };
-        this.AirPurifierSleepModeSetup = () => {
-            this.AirPurifierSleepModeDevice.addSpec(AirDogAirPurifierX7SM_constant_1.Specs);
-            this.AirPurifierSleepModeDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.On, {
+        this.AirPurifierSleepModeSetup = (service) => {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.On, {
+                service,
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierMode] === AirDogAirPurifierX7SM_constant_1.AirPurifierModeGetCode.Sleep
                         ? 1
@@ -98,16 +97,17 @@ class AirDogAirPurifierX7SM {
                 },
             });
         };
-        this.AirPurifierSensorSetup = () => {
-            this.AirPurifierSensorDevice.addSpec(AirDogAirPurifierX7SM_constant_1.Specs);
-            this.AirPurifierSensorDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.StatusActive, {
+        this.AirPurifierSensorSetup = (service) => {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.StatusActive, {
+                service,
                 get: {
                     formatter: (valueMapping) => {
                         return valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.AirPurifierSwitchStatus] === AirDogAirPurifierX7SM_constant_1.AirPurifierSwitchStatusGetCode.On;
                     }
                 },
             });
-            this.AirPurifierSensorDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.AirQuality, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.AirQuality, {
+                service,
                 get: {
                     formatter: (valueMapping) => {
                         let HCHOLevel;
@@ -147,12 +147,14 @@ class AirDogAirPurifierX7SM {
                     }
                 },
             });
-            this.AirPurifierSensorDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.PM2_5Density, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.PM2_5Density, {
+                service,
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.EnvironmentPM25Density]
                 },
             });
-            this.AirPurifierSensorDevice.addCharacteristicListener(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.VOCDensity, {
+            this.AirPurifierDevice.addCharacteristicListener(homebridge_mi_devices_1.Shared.hap.Characteristic.VOCDensity, {
+                service,
                 get: {
                     formatter: (valueMapping) => valueMapping[AirDogAirPurifierX7SM_constant_1.Specs.EnvironmentHCHODensity]
                 },
@@ -163,31 +165,27 @@ class AirDogAirPurifierX7SM {
         this.token = props.identify.token;
         this.address = props.identify.address;
         // Information
-        this.informationService = new homebridge_mi_devices_1.SharedFoundation.hap.Service.AccessoryInformation()
-            .setCharacteristic(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.Manufacturer, 'AirDog')
-            .setCharacteristic(homebridge_mi_devices_1.SharedFoundation.hap.Characteristic.Model, 'X7S(m)');
+        this.informationService = new homebridge_mi_devices_1.Shared.hap.Service.AccessoryInformation()
+            .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Manufacturer, 'AirDog')
+            .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Model, 'X7S(m)');
         // AirPurifier
         const AirPurifierName = props.identify.name;
-        this.AirPurifierService = new homebridge_mi_devices_1.SharedFoundation.hap.Service.AirPurifier(AirPurifierName);
-        this.AirPurifierDevice = new homebridge_mi_devices_1.MIIODevice({ ...props, characteristicsName: AirPurifierName, characteristicsService: this.AirPurifierService });
+        this.AirPurifierService = new homebridge_mi_devices_1.Shared.hap.Service.AirPurifier(AirPurifierName);
+        this.AirPurifierDevice = new homebridge_mi_devices_1.MIIODevice({ ...props, service: this.AirPurifierService, specs: AirDogAirPurifierX7SM_constant_1.Specs });
         this.AirPurifierSetup();
         // AirPurifier: Sleep mode
-        const AirPurifierSleepModeName = `${props.identify.name}.SleepMode`;
-        this.AirPurifierSleepModeService = new homebridge_mi_devices_1.SharedFoundation.hap.Service.Switch(AirPurifierSleepModeName);
-        this.AirPurifierSleepModeDevice = new homebridge_mi_devices_1.MIIODevice({ ...props, characteristicsName: AirPurifierSleepModeName, characteristicsService: this.AirPurifierSleepModeService });
-        this.AirPurifierSleepModeSetup();
+        this.AirPurifierSleepModeService = new homebridge_mi_devices_1.Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`);
+        this.AirPurifierSleepModeSetup(this.AirPurifierService);
         // AirPurifier: Sensor
-        const AirPurifierSensorName = `${props.identify.name}.Sensor`;
-        this.AirPurifierSensorService = new homebridge_mi_devices_1.SharedFoundation.hap.Service.AirQualitySensor(AirPurifierSensorName);
-        this.AirPurifierSensorDevice = new homebridge_mi_devices_1.MIIODevice({ ...props, characteristicsName: AirPurifierSensorName, characteristicsService: this.AirPurifierSensorService });
-        this.AirPurifierSensorSetup();
+        this.AirPurifierSensorService = new homebridge_mi_devices_1.Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`);
+        this.AirPurifierSensorSetup(this.AirPurifierService);
     }
     /*
      * This method is optional to implement. It is called when HomeKit ask to identify the accessory.
      * Typical this only ever happens at the pairing process.
      */
     identify() {
-        homebridge_mi_devices_1.SharedFoundation.log.info(`Identifying ${this.name} ${this.address}`);
+        homebridge_mi_devices_1.Shared.log.info(`Identifying ${this.name} ${this.address}`);
     }
     /*
      * This method is called directly after creation of this instance.
