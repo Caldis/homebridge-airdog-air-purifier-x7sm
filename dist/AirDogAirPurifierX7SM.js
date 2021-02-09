@@ -169,8 +169,7 @@ class AirDogAirPurifierX7SM {
             .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Manufacturer, 'AirDog')
             .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Model, 'X7S(m)');
         // AirPurifier
-        const AirPurifierName = props.identify.name;
-        this.AirPurifierService = new homebridge_mi_devices_1.Shared.hap.Service.AirPurifier(AirPurifierName);
+        this.AirPurifierService = new homebridge_mi_devices_1.Shared.hap.Service.AirPurifier(props.identify.name);
         this.AirPurifierDevice = new homebridge_mi_devices_1.MIIODevice({ ...props, service: this.AirPurifierService, specs: AirDogAirPurifierX7SM_constant_1.Specs });
         this.AirPurifierSetup();
         // AirPurifier: Sleep mode

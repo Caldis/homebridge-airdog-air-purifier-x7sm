@@ -37,8 +37,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       .setCharacteristic(Shared.hap.Characteristic.Manufacturer, 'AirDog')
       .setCharacteristic(Shared.hap.Characteristic.Model, 'X7S(m)')
     // AirPurifier
-    const AirPurifierName = props.identify.name
-    this.AirPurifierService = new Shared.hap.Service.AirPurifier(AirPurifierName)
+    this.AirPurifierService = new Shared.hap.Service.AirPurifier(props.identify.name)
     this.AirPurifierDevice = new MIIODevice({ ...props, service: this.AirPurifierService, specs: Specs })
     this.AirPurifierSetup()
     // AirPurifier: Sleep mode
