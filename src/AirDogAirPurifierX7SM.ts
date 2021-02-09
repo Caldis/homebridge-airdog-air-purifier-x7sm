@@ -1,4 +1,4 @@
-import { AccessoryPlugin, Service } from 'homebridge'
+import { AccessoryPlugin, Service, Categories } from 'homebridge'
 import { MIIODevice, MiIdentify, Shared } from 'homebridge-mi-devices'
 import {
   AirPurifierFanLevelCodeMapping, AirPurifierFanLevelGetCode,
@@ -34,6 +34,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.address = props.identify.address
     // Information
     this.informationService = new Shared.hap.Service.AccessoryInformation()
+      .setCharacteristic(Shared.hap.Characteristic.Category, Categories.AIR_PURIFIER)
       .setCharacteristic(Shared.hap.Characteristic.Manufacturer, 'AirDog')
       .setCharacteristic(Shared.hap.Characteristic.Model, 'X7S(m)')
     // AirPurifier
@@ -41,10 +42,10 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice = new MIIODevice({ ...props, service: this.AirPurifierService, specs: Specs })
     this.AirPurifierSetup()
     // AirPurifier: Sleep mode
-    this.AirPurifierSleepModeService = new Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`)
+    this.AirPurifierSleepModeService = new Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`, 'SleepMode')
     this.AirPurifierSleepModeSetup(this.AirPurifierService)
     // AirPurifier: Sensor
-    this.AirPurifierSensorService = new Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`)
+    this.AirPurifierSensorService = new Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`, 'Sensor')
     this.AirPurifierSensorSetup(this.AirPurifierService)
   }
 

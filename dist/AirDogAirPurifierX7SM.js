@@ -166,6 +166,7 @@ class AirDogAirPurifierX7SM {
         this.address = props.identify.address;
         // Information
         this.informationService = new homebridge_mi_devices_1.Shared.hap.Service.AccessoryInformation()
+            .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Category, 19 /* AIR_PURIFIER */)
             .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Manufacturer, 'AirDog')
             .setCharacteristic(homebridge_mi_devices_1.Shared.hap.Characteristic.Model, 'X7S(m)');
         // AirPurifier
@@ -173,10 +174,10 @@ class AirDogAirPurifierX7SM {
         this.AirPurifierDevice = new homebridge_mi_devices_1.MIIODevice({ ...props, service: this.AirPurifierService, specs: AirDogAirPurifierX7SM_constant_1.Specs });
         this.AirPurifierSetup();
         // AirPurifier: Sleep mode
-        this.AirPurifierSleepModeService = new homebridge_mi_devices_1.Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`);
+        this.AirPurifierSleepModeService = new homebridge_mi_devices_1.Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`, 'SleepMode');
         this.AirPurifierSleepModeSetup(this.AirPurifierService);
         // AirPurifier: Sensor
-        this.AirPurifierSensorService = new homebridge_mi_devices_1.Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`);
+        this.AirPurifierSensorService = new homebridge_mi_devices_1.Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`, 'Sensor');
         this.AirPurifierSensorSetup(this.AirPurifierService);
     }
     /*
