@@ -1,5 +1,5 @@
 {
-  "version": "1.9.2",
+  "version": "1.9.3",
   "name": "homebridge-airdog-air-purifier-x7sm",
   "description": "HomeBridge AirDog Air Purifier X7S(m)",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
     "typescript": "latest"
   },
   "scripts": {
-    "prepublishOnly": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm version patch --force && rimraf ./dist && tsc",
     "relink": "npm run prepublishOnly && npm unlink && npm link"
   },
   "keywords": [
