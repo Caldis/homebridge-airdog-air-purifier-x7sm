@@ -175,10 +175,10 @@ class AirDogAirPurifierX7SM {
         this.AirPurifierSetup();
         // AirPurifier: Sleep mode
         this.AirPurifierSleepModeService = new homebridge_mi_devices_1.Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`, 'SleepMode');
-        this.AirPurifierSleepModeSetup(this.AirPurifierService);
+        this.AirPurifierSleepModeSetup(this.AirPurifierSleepModeService);
         // AirPurifier: Sensor
         this.AirPurifierSensorService = new homebridge_mi_devices_1.Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`, 'Sensor');
-        this.AirPurifierSensorSetup(this.AirPurifierService);
+        this.AirPurifierSensorSetup(this.AirPurifierSensorService);
     }
     /*
      * This method is optional to implement. It is called when HomeKit ask to identify the accessory.

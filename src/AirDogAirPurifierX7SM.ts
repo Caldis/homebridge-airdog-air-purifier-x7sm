@@ -43,10 +43,10 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierSetup()
     // AirPurifier: Sleep mode
     this.AirPurifierSleepModeService = new Shared.hap.Service.Switch(`${props.identify.name}.SleepMode`, 'SleepMode')
-    this.AirPurifierSleepModeSetup(this.AirPurifierService)
+    this.AirPurifierSleepModeSetup(this.AirPurifierSleepModeService)
     // AirPurifier: Sensor
     this.AirPurifierSensorService = new Shared.hap.Service.AirQualitySensor(`${props.identify.name}.Sensor`, 'Sensor')
-    this.AirPurifierSensorSetup(this.AirPurifierService)
+    this.AirPurifierSensorSetup(this.AirPurifierSensorService)
   }
 
   AirPurifierSetup = () => {
@@ -60,6 +60,16 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       },
       set: {
         property: 'set_power',
+        validator: (value, previousProperty) => {
+          const v = value as AirPurifierSwitchStatusSetCode
+          switch (previousProperty[Specs.AirPurifierSwitchStatus]) {
+            case AirPurifierSwitchStatusGetCode.On:
+              return v !== AirPurifierSwitchStatusSetCode.On
+            case AirPurifierSwitchStatusGetCode.Off:
+              return v !== AirPurifierSwitchStatusSetCode.Off
+          }
+          return true
+        },
         formatter: (value) => {
           // !!!!!!IMPORTANT: Set CurrentAirPurifierState Manually to prevent stuck in turning on/off
           const v = value as AirPurifierSwitchStatusSetCode
@@ -72,8 +82,8 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       get: {
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
-            ? 2
-            : 0
+            ? Shared.hap.Characteristic.CurrentAirPurifierState.PURIFYING_AIR
+            : Shared.hap.Characteristic.CurrentAirPurifierState.INACTIVE
       },
     })
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.TargetAirPurifierState, {
@@ -83,8 +93,18 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       },
       set: {
         property: 'set_wind', // [modeValue, speedValue]
+        validator: (value, previousProperty) => {
+          const v = value as AirPurifierSwitchStatusSetCode
+          switch (previousProperty[Specs.AirPurifierSwitchStatus]) {
+            case AirPurifierSwitchStatusGetCode.On:
+              return v !== AirPurifierSwitchStatusSetCode.On
+            case AirPurifierSwitchStatusGetCode.Off:
+              return v !== AirPurifierSwitchStatusSetCode.Off
+          }
+          return true
+        },
         formatter: (value, previousProperty) =>
-          value === 1
+          value === Shared.hap.Characteristic.TargetAirPurifierState.AUTO
             ? [AirPurifierModeSetCode.Auto, previousProperty[Specs.AirPurifierFanLevel]]
             : [AirPurifierModeSetCode.Manual, previousProperty[Specs.AirPurifierFanLevel]]
       },
