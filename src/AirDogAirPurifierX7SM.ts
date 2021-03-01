@@ -54,21 +54,26 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       get: {
         formatter: (valueMapping) => {
           return valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
-            ? 1
-            : 0
+            ? Shared.hap.Characteristic.Active.ACTIVE
+            : Shared.hap.Characteristic.Active.INACTIVE
         }
       },
       set: {
         property: 'set_power',
         validator: (value, previousProperty) => {
+          let res = true
           const v = value as AirPurifierSwitchStatusSetCode
           switch (previousProperty[Specs.AirPurifierSwitchStatus]) {
             case AirPurifierSwitchStatusGetCode.On:
-              return v !== AirPurifierSwitchStatusSetCode.On
+              res = v !== AirPurifierSwitchStatusSetCode.On
+              res && (previousProperty[Specs.AirPurifierSwitchStatus] = AirPurifierSwitchStatusGetCode.Off)
+              break
             case AirPurifierSwitchStatusGetCode.Off:
-              return v !== AirPurifierSwitchStatusSetCode.Off
+              res = v !== AirPurifierSwitchStatusSetCode.Off
+              res && (previousProperty[Specs.AirPurifierSwitchStatus] = AirPurifierSwitchStatusGetCode.On)
+              break
           }
-          return true
+          return res
         },
         formatter: (value) => {
           // !!!!!!IMPORTANT: Set CurrentAirPurifierState Manually to prevent stuck in turning on/off
@@ -89,19 +94,30 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.TargetAirPurifierState, {
       get: {
         formatter: (valueMapping) =>
-          valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Auto ? 1 : 0
+          valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Auto
+            ? Shared.hap.Characteristic.TargetAirPurifierState.AUTO
+            : Shared.hap.Characteristic.TargetAirPurifierState.MANUAL
       },
       set: {
         property: 'set_wind', // [modeValue, speedValue]
         validator: (value, previousProperty) => {
-          const v = value as AirPurifierSwitchStatusSetCode
-          switch (previousProperty[Specs.AirPurifierSwitchStatus]) {
-            case AirPurifierSwitchStatusGetCode.On:
-              return v !== AirPurifierSwitchStatusSetCode.On
-            case AirPurifierSwitchStatusGetCode.Off:
-              return v !== AirPurifierSwitchStatusSetCode.Off
+          let res = true
+          const v = value as AirPurifierModeSetCode
+          switch (previousProperty[Specs.AirPurifierMode]) {
+            case AirPurifierModeSetCode.Auto:
+              res = v !== AirPurifierModeSetCode.Auto
+              res && (previousProperty[Specs.AirPurifierMode] = AirPurifierModeSetCode.Manual)
+              break
+            case AirPurifierModeSetCode.Manual:
+              res = v !== AirPurifierModeSetCode.Manual
+              res && (previousProperty[Specs.AirPurifierMode] = AirPurifierModeSetCode.Auto)
+              break
+            case AirPurifierModeSetCode.Sleep:
+              res = v !== AirPurifierModeSetCode.Sleep
+              res && (previousProperty[Specs.AirPurifierMode] = AirPurifierModeSetCode.Auto)
+              break
           }
-          return true
+          return res
         },
         formatter: (value, previousProperty) =>
           value === Shared.hap.Characteristic.TargetAirPurifierState.AUTO
@@ -113,13 +129,13 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
       get: {
         formatter: (valueMapping) =>
           valueMapping[Specs.PhysicalControlLocked] === AirPurifierLockGetCode.Lock
-            ? 1
-            : 0
+            ? Shared.hap.Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED
+            : Shared.hap.Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED
       },
       set: {
         property: 'set_lock',
         formatter: (value) =>
-          value === 1
+          value === Shared.hap.Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED
             ? [AirPurifierLockSetCode.Lock]
             : [AirPurifierLockSetCode.Unlock]
       },
