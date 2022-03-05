@@ -21,7 +21,7 @@ npm i homebridge-airdog-air-purifier-x7sm@latest
 {
   "platforms": [
     {
-      "platform": "AirDogAirPurifierX7SM",
+      "platform": "Device",
       "devices": [
         {
           "name": "Name",

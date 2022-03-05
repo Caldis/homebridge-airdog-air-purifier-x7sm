@@ -7,13 +7,13 @@ import {
   AirPurifierSwitchStatusGetCode,
   AirPurifierSwitchStatusSetCode,
   Specs
-} from 'src/device.constant'
+} from './device.constant'
 
 type Props = {
   identify: MiIdentify
 }
 
-export class Deivce implements AccessoryPlugin {
+export class Device implements AccessoryPlugin {
 
   // Requirement
   private readonly name: string
