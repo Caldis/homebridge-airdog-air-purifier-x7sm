@@ -52,6 +52,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
   AirPurifierSetup = () => {
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.Active, {
       get: {
+        defaultValue: Shared.hap.Characteristic.Active.INACTIVE,
         formatter: (valueMapping) => {
           return valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
             ? Shared.hap.Characteristic.Active.ACTIVE
@@ -85,6 +86,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     })
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.CurrentAirPurifierState, {
       get: {
+        defaultValue: Shared.hap.Characteristic.CurrentAirPurifierState.INACTIVE,
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
             ? Shared.hap.Characteristic.CurrentAirPurifierState.PURIFYING_AIR
@@ -93,6 +95,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     })
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.TargetAirPurifierState, {
       get: {
+        defaultValue: Shared.hap.Characteristic.TargetAirPurifierState.AUTO,
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Auto
             ? Shared.hap.Characteristic.TargetAirPurifierState.AUTO
@@ -127,6 +130,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     })
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.LockPhysicalControls, {
       get: {
+        defaultValue: Shared.hap.Characteristic.LockPhysicalControls.CONTROL_LOCK_DISABLED,
         formatter: (valueMapping) =>
           valueMapping[Specs.PhysicalControlLocked] === AirPurifierLockGetCode.Lock
             ? Shared.hap.Characteristic.LockPhysicalControls.CONTROL_LOCK_ENABLED
@@ -142,6 +146,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     })
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.RotationSpeed, {
       get: {
+        defaultValue: AirPurifierFanLevelGetCode.Level1,
         formatter: (valueMapping) =>
           AirPurifierFanLevelCodeMapping[valueMapping[Specs.AirPurifierFanLevel] as AirPurifierFanLevelGetCode]
       },
@@ -167,6 +172,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.On, {
       service,
       get: {
+        defaultValue: 0,
         formatter: (valueMapping) =>
           valueMapping[Specs.AirPurifierMode] === AirPurifierModeGetCode.Sleep
             ? 1
@@ -185,6 +191,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.StatusActive, {
       service,
       get: {
+        defaultValue: false,
         formatter: (valueMapping) => {
           return valueMapping[Specs.AirPurifierSwitchStatus] === AirPurifierSwitchStatusGetCode.On
         }
@@ -193,6 +200,7 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.AirQuality, {
       service,
       get: {
+        defaultValue: 0,
         formatter: (valueMapping) => {
           let HCHOLevel
           const HCHO = valueMapping[Specs.EnvironmentHCHODensity]
@@ -226,12 +234,14 @@ export class AirDogAirPurifierX7SM implements AccessoryPlugin {
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.PM2_5Density, {
       service,
       get: {
+        defaultValue:0,
         formatter: (valueMapping) => valueMapping[Specs.EnvironmentPM25Density]
       },
     })
     this.AirPurifierDevice.addCharacteristicListener(Shared.hap.Characteristic.VOCDensity, {
       service,
       get: {
+        defaultValue:0,
         formatter: (valueMapping) => valueMapping[Specs.EnvironmentHCHODensity]
       },
     })
