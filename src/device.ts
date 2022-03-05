@@ -7,13 +7,13 @@ import {
   AirPurifierSwitchStatusGetCode,
   AirPurifierSwitchStatusSetCode,
   Specs
-} from './AirDogAirPurifierX7SM.constant'
+} from 'src/device.constant'
 
 type Props = {
   identify: MiIdentify
 }
 
-export class AirDogAirPurifierX7SM implements AccessoryPlugin {
+export class Deivce implements AccessoryPlugin {
 
   // Requirement
   private readonly name: string
